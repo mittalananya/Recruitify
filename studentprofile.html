@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitify - Create Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dusky-rose: #D9BCAF;
+            --thistle: #8A9688;
+            --hawthorne-green: #283D3B;
+            --royal-scepter: #795663;
+            --blue-noir: #011627;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .profile-container {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(1, 22, 39, 0.25);
+            padding: 50px 80px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--dusky-rose), var(--thistle), var(--hawthorne-green), var(--royal-scepter), var(--blue-noir));
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: var(--hawthorne-green);
+            font-size: 55px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin: 0 0 8px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo p {
+            color: var(--royal-scepter);
+            font-size: 22px;
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .title {
+            color: var(--hawthorne-green);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: var(--royal-scepter);
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .profile-photo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .photo-upload-area {
+            width: 150px;
+            height: 150px;
+            border: 3px dashed rgba(138, 150, 136, 0.4);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(217, 188, 175, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-upload-area:hover {
+            border-color: var(--royal-scepter);
+            background: rgba(217, 188, 175, 0.15);
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .photo-placeholder {
+            color: var(--thistle);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--hawthorne-green);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 18px 22px;
+            border: 2px solid rgba(138, 150, 136, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            background: rgba(217, 188, 175, 0.1);
+            transition: all 0.3s ease;
+            color: var(--hawthorne-green);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: rgba(40, 61, 59, 0.7);
+            font-weight: 400;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--royal-scepter);
+            background: rgba(217, 188, 175, 0.15);
+            box-shadow: 0 0 0 4px rgba(121, 86, 99, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .sgpa-section {
+            background: rgba(217, 188, 175, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid rgba(138, 150, 136, 0.2);
+        }
+
+        .sgpa-header {
+            color: var(--hawthorne-green);
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .add-semester-btn {
+            background: linear-gradient(135deg, var(--thistle) 0%, var(--hawthorne-green) 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .add-semester-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 150, 136, 0.3);
+        }
+
+        .semester-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .semester-item .form-input {
+            flex: 1;
+        }
+
+        .remove-semester {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-semester:hover {
+            background: #c0392b;
+        }
+
+        .file-upload-area {
+            border: 2px dashed rgba(138, 150, 136, 0.4);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(217, 188, 175, 0.05);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--royal-scepter);
+            background: rgba(217, 188, 175, 0.1);
+        }
+
+        .file-upload-text {
+            color: var(--thistle);
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .file-name {
+            color: var(--hawthorne-green);
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .create-profile-btn {
+            width: 100%;
+            padding: 22px;
+            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(1, 22, 39, 0.4);
+            letter-spacing: 0.2px;
+        }
+
+        .create-profile-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(1, 22, 39, 0.5);
+            background: linear-gradient(135deg, var(--hawthorne-green) 0%, var(--blue-noir) 100%);
+        }
+
+        .create-profile-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Background Effects */
+        .background-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(217, 188, 175, 0.08);
+            animation: floatRandom 8s ease-in-out infinite;
+        }
+
+        .circle-1 {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 8%;
+            animation-delay: 0s;
+        }
+
+        .circle-2 {
+            width: 180px;
+            height: 180px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+            background: rgba(138, 150, 136, 0.06);
+        }
+
+        .circle-3 {
+            width: 90px;
+            height: 90px;
+            bottom: 25%;
+            left: 15%;
+            animation-delay: 4s;
+            background: rgba(121, 86, 99, 0.08);
+        }
+
+        @keyframes floatRandom {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(30px, -30px) rotate(90deg);
+            }
+
+            50% {
+                transform: translate(-20px, -40px) rotate(180deg);
+            }
+
+            75% {
+                transform: translate(-30px, 15px) rotate(270deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 40px 30px;
+                margin: 10px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .logo h1 {
+                font-size: 45px;
+            }
+
+            .logo p {
+                font-size: 18px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-container {
+                padding: 30px 25px;
+            }
+
+            .semester-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .semester-item .form-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-effects">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+    </div>
+
+    <div class="profile-container">
+        <div class="header">
+            <div class="logo">
+                <h1>RECRUITIFY</h1>
+                <p>Beyond Resumes</p>
+            </div>
+        </div>
+
+        <h2 class="title">Create Your Profile</h2>
+        <p class="subtitle">Let's build your professional presence and showcase your potential</p>
+
+        <form id="profileForm">
+            <!-- Profile Photo Section -->
+            <div class="profile-photo-section">
+                <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+                    <img id="photoPreview" class="photo-preview" style="display: none;">
+                    <div class="photo-placeholder" id="photoPlaceholder">
+                        📷<br>Add Photo<br>(Optional)
+                    </div>
+                </div>
+                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+
+                <div class="form-group">
+                    <input type="text" class="form-input"
+                        placeholder="One-line tagline (e.g., 'AI enthusiast', 'Full-stack developer')" id="tagline">
+                </div>
+            </div>
+
+            <!-- Basic Information Grid -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Roll Number <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="rollNumber" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Full Name <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email ID <span class="required">*</span></label>
+                    <input type="email" class="form-input" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number <span class="required">*</span></label>
+                    <input type="tel" class="form-input" id="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date of Birth <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="dob" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Year of Study <span class="required">*</span></label>
+                    <select class="form-select" id="yearOfStudy" required>
+                        <option value="">Select Year</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label class="form-label">Address <span class="required">*</span></label>
+                <textarea class="form-textarea" id="address" placeholder="Enter your full address" required></textarea>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">College/Institution <span class="required">*</span></label>
+                    <select class="form-select" id="college" required>
+                        <option value="">Select College</option>
+                        <option value="KIT DSEU Pitampura Campus">KIT DSEU Pitampura Campus</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Branch/Department <span class="required">*</span></label>
+                    <select class="form-select" id="branch" required>
+                        <option value="">Select Branch</option>
+                        <option value="Diploma in Civil Engineering">Diploma in Civil Engineering</option>
+                        <option value="Diploma in Computer Engineering">Diploma in Computer Engineering</option>
+                        <option value="Diploma in Electronics Engineering">Diploma in Electronics Engineering</option>
+                        <option value="Diploma in Fashion Design">Diploma in Fashion Design</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Overall CGPA <span class="required">*</span></label>
+                    <input type="number" class="form-input" id="cgpa" step="0.01" min="0" max="10"
+                        placeholder="e.g., 8.75" required>
+                </div>
+            </div>
+
+            <!-- SGPA Section -->
+            <div class="sgpa-section">
+                <div class="sgpa-header">
+                    <span>Semester-wise SGPA (Optional)</span>
+                    <button type="button" class="add-semester-btn" onclick="addSemester()">+ Add Semester</button>
+                </div>
+                <div id="semesterContainer"></div>
+            </div>
+
+            <!-- Links Section -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">LinkedIn Profile (Optional)</label>
+                    <input type="url" class="form-input" id="linkedin"
+                        placeholder="https://linkedin.com/in/yourprofile">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">GitHub Profile (Optional)</label>
+                    <input type="url" class="form-input" id="github" placeholder="https://github.com/yourusername">
+                </div>
+            </div>
+
+            <!-- Resume Upload -->
+            <div class="form-group full-width">
+                <label class="form-label">Upload Resume (Optional)</label>
+                <div class="file-upload-area" onclick="document.getElementById('resumeInput').click()">
+                    <div>📄</div>
+                    <div class="file-upload-text" id="resumeText">Click to upload your resume (PDF, DOC, DOCX)</div>
+                    <div class="file-name" id="resumeFileName"></div>
+                </div>
+                <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" style="display: none;">
+            </div>
+
+            <button type="submit" class="create-profile-btn">Create My Profile</button>
+        </form>
+    </div>
+
+    <script>
+        let semesterCount = 0;
+
+        document.getElementById('photoInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                    document.getElementById('photoPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('resumeInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('resumeText').textContent = 'Resume uploaded successfully!';
+                document.getElementById('resumeFileName').textContent = file.name;
+            }
+        });
+
+        function addSemester() {
+            semesterCount++;
+            const container = document.getElementById('semesterContainer');
+            const semesterDiv = document.createElement('div');
+            semesterDiv.className = 'semester-item';
+            semesterDiv.innerHTML = `
+                <input type="text" class="form-input" placeholder="Semester ${semesterCount}" readonly>
+                <input type="number" class="form-input" step="0.01" min="0" max="10" placeholder="SGPA (e.g., 8.5)">
+                <button type="button" class="remove-semester" onclick="removeSemester(this)">×</button>
+            `;
+            container.appendChild(semesterDiv);
+        }
+
+        function removeSemester(button) {
+            button.parentElement.remove();
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = {
+                rollNumber: document.getElementById('rollNumber').value,
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                dob: document.getElementById('dob').value,
+                address: document.getElementById('address').value,
+                college: document.getElementById('college').value,
+                branch: document.getElementById('branch').value,
+                cgpa: document.getElementById('cgpa').value,
+                yearOfStudy: document.getElementById('yearOfStudy').value,
+                tagline: document.getElementById('tagline').value,
+                linkedin: document.getElementById('linkedin').value,
+                github: document.getElementById('github').value
+            };
+
+            const sgpaInputs = document.querySelectorAll('#semesterContainer .semester-item input[type="number"]');
+            formData.sgpa = [];
+            sgpaInputs.forEach((input, index) => {
+                if (input.value) {
+                    formData.sgpa.push({
+                        semester: index + 1,
+                        sgpa: parseFloat(input.value)
+                    });
+                }
+            });
+
+            console.log('Profile data:', formData);
+            alert('Profile created successfully! Welcome to Recruitify.');
+        });
+
+        addSemester();
+        addSemester();
+
+        document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
+            input.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+
+</html>
