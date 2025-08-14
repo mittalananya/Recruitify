@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitify - Beyond Resumes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dusky-rose: #D9BCAF;
+            --thistle: #8A9688;
+            --hawthorne-green: #283D3B;
+            --royal-scepter: #795663;
+            --blue-noir: #011627;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            padding: 30px 0;
+            display: flex;
+            justify-content: center;
+            /* Center RECRUITIFY */
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
+            /* Center text inside */
+        }
+
+        .logo-top {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: center;
+            position: relative;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: var(--dusky-rose);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(217, 188, 175, 0.4);
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            left: -10px;
+            /* nudges circle left so text is optically centered */
+        }
+
+        .logo-text {
+            font-family: 'Oswald', sans-serif;
+            font-size: 7rem;
+            font-weight: 600;
+            color: var(--dusky-rose);
+            letter-spacing: 8px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .tagline {
+            font-size: 2.2rem;
+            color: var(--thistle);
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 3px;
+            transform: translateX(35px);
+            /* aligns tagline under the text */
+        }
+
+
+        .admin-login {
+            position: fixed;
+            /* instead of absolute */
+            top: 10px;
+            right: 10px;
+            background: rgba(138, 150, 136, 0.2);
+            color: var(--dusky-rose);
+            padding: 12px 25px;
+            border: 2px solid var(--thistle);
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            z-index: 999;
+            /* keep it above everything */
+        }
+
+
+        .admin-login:hover {
+            background: var(--thistle);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 150, 136, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 40px 0 80px;
+            position: relative;
+        }
+
+        .main-cards {
+            display: flex;
+            gap: 50px;
+            /* more space between cards */
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            margin-top: 60px;
+            /* lowers the cards */
+        }
+
+        .card {
+            flex: 1;
+            max-width: 500px;
+            /* increased width */
+            min-width: 350px;
+            /* increased min width */
+            padding: 80px 50px;
+            /* increased height & inner spacing */
+            border-radius: 50px;
+            /* rounded corners */
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+            font-size: 3.8rem;
+            /* larger text */
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: white;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .students-card {
+            background: linear-gradient(135deg, var(--thistle), #6d7d6a);
+        }
+
+        .recruiters-card {
+            background: linear-gradient(135deg, var(--royal-scepter), #9b6f7c);
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Bottom Section */
+        .bottom-section {
+            text-align: center;
+            padding: 40px 0 60px;
+        }
+
+        .features {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.2rem;
+            color: var(--dusky-rose);
+            font-weight: 500;
+            letter-spacing: 3px;
+            position: relative;
+            text-transform: capitalize;
+        }
+
+        .features::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--dusky-rose), var(--royal-scepter));
+            border-radius: 2px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Background Effects */
+        .background-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            /* was -1, now visible but still behind content */
+        }
+
+        /* Floating circles base */
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(217, 188, 175, 0.1);
+        }
+
+        /* Circle 1 – small gentle float */
+        .circle-1 {
+            width: 120px;
+            height: 120px;
+            top: 10%;
+            left: 5%;
+            animation: floatCircle1 8s ease-in-out infinite;
+            animation-delay: 0s;
+        }
+
+        /* Circle 2 – larger, slower float */
+        .circle-2 {
+            width: 180px;
+            height: 180px;
+            top: 30%;
+            right: 8%;
+            animation: floatCircle2 11s ease-in-out infinite;
+            animation-delay: 1.5s;
+        }
+
+        /* Circle 3 – medium float */
+        .circle-3 {
+            width: 100px;
+            height: 100px;
+            bottom: 5%;
+            left: 70%;
+            animation: floatCircle3 9s ease-in-out infinite;
+            animation-delay: 2.5s;
+        }
+
+        /* Different animations for each */
+        @keyframes floatCircle1 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(12px, -10px) scale(1.05);
+            }
+
+            50% {
+                transform: translate(-8px, 7px) scale(0.95);
+            }
+
+            75% {
+                transform: translate(10px, 12px) scale(1.03);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes floatCircle2 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(20px, -18px) scale(1.08);
+            }
+
+            50% {
+                transform: translate(-15px, 12px) scale(0.92);
+            }
+
+            75% {
+                transform: translate(18px, 15px) scale(1.06);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        @keyframes floatCircle3 {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(15px, -12px) scale(1.04);
+            }
+
+            50% {
+                transform: translate(-12px, 10px) scale(0.96);
+            }
+
+            75% {
+                transform: translate(14px, 16px) scale(1.05);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-effects">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-top">
+                    <div class="logo-circle"></div>
+                    <div class="logo-text">RECRUITIFY</div>
+                </div>
+                <div class="tagline">Beyond Resumes</div>
+            </div>
+            <a href="#" class="admin-login">Admin Login</a>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="main-cards">
+                    <a href="#" class="card students-card">
+                        Students
+                    </a>
+                    <a href="#" class="card recruiters-card">
+
+
+                        Recruiters
+
+
+                    </a>
+                </div>
+
+                <div class="bottom-section">
+                    <div class="features">Skills • Projects • Hired</div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>
