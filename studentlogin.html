@@ -538,19 +538,19 @@
         });
 
         signupForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log('Signup form submitted');
-            // Add your signup logic here
+    e.preventDefault();
 
-            // Basic password confirmation check
-            const password = e.target.querySelector('input[placeholder="Create Password"]').value;
-            const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
+    const password = e.target.querySelector('input[placeholder="Create Password"]').value;
+    const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
 
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
-                return;
-            }
-        });
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+
+    // ✅ Redirect to studentprofile.html after successful signup
+    window.location.href = "studentprofile.html";
+});
 
         // Add some interactive effects
         document.querySelectorAll('.form-input').forEach(input => {
