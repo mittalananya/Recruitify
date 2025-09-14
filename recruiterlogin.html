@@ -536,12 +536,15 @@
         // Add your login logic here
     });
 
-    signupForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+   signupForm.addEventListener('submit', function (e) {
+        e.preventDefault(); // stop form from refreshing the page
         console.log('Signup form submitted');
 
-        // ✅ Redirect to recruiter profile after signup
-        window.location.href = "recruiterprofile.html";  
+        // Redirect after signup
+        setTimeout(() => {
+            window.location.assign("recruiterprofile.html");
+        }, 300); // small delay so you can see console log
+    });
     });
 
     // Add some interactive effects
