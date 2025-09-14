@@ -504,39 +504,56 @@
         </form>
     </div>
 
-   <script> 
-       const loginToggle = document.getElementById('loginToggle');
-       const signupToggle = document.getElementById('signupToggle');
-       const loginForm = document.getElementById('loginForm'); 
-       const signupForm = document.getElementById('signupForm');
-       const authTitle = document.getElementById('authTitle'); 
-       function switchToLogin() { 
-           loginToggle.classList.add('active'); 
-           signupToggle.classList.remove('active');
-           loginForm.classList.add('active');
-           signupForm.classList.remove('active');
-           authTitle.textContent = 'RECRUITER LOGIN'; } 
-       function switchToSignup() {
-           signupToggle.classList.add('active'); 
-           loginToggle.classList.remove('active');
-           signupForm.classList.add('active');
-           loginForm.classList.remove('active');
-           authTitle.textContent = 'RECRUITER SIGNUP'; } 
-       loginToggle.addEventListener('click', switchToLogin); 
-       signupToggle.addEventListener('click', switchToSignup); // Form submissions 
-       loginForm.addEventListener('submit', function (e) { 
-           e.preventDefault();
-           console.log('Login form submitted'); // Add your login logic here 
-       });
-       signupForm.addEventListener('submit', function (e) {
-           e.preventDefault();
-           console.log('Signup form submitted'); // Add your signup logic here 
-       }); // Add some interactive effects
-       document.querySelectorAll('.form-input')
-           .forEach(input => { input.addEventListener('focus', function ({ this.parentElement.style.transform = 'scale(1.02)'; });
-       input.addEventListener('blur', function () { this.parentElement.style.transform = 'scale(1)'; 
-                                                  });
-       }); </script>
+    <script>
+        const loginToggle = document.getElementById('loginToggle');
+        const signupToggle = document.getElementById('signupToggle');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const authTitle = document.getElementById('authTitle');
+
+        function switchToLogin() {
+            loginToggle.classList.add('active');
+            signupToggle.classList.remove('active');
+            loginForm.classList.add('active');
+            signupForm.classList.remove('active');
+            authTitle.textContent = 'RECRUITER LOGIN';
+        }
+
+        function switchToSignup() {
+            signupToggle.classList.add('active');
+            loginToggle.classList.remove('active');
+            signupForm.classList.add('active');
+            loginForm.classList.remove('active');
+            authTitle.textContent = 'RECRUITER SIGNUP';
+        }
+
+        loginToggle.addEventListener('click', switchToLogin);
+        signupToggle.addEventListener('click', switchToSignup);
+
+        // Form submissions
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            console.log('Login form submitted');
+            // Add your login logic here
+        });
+
+        signupForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            console.log('Signup form submitted');
+            // Add your signup logic here
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
 </body>
 
 </html>
