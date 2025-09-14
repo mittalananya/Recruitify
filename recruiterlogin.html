@@ -504,56 +504,88 @@
         </form>
     </div>
 
-    <script>
-        const loginToggle = document.getElementById('loginToggle');
-        const signupToggle = document.getElementById('signupToggle');
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-        const authTitle = document.getElementById('authTitle');
+   <script>
+(function(){
+  // Guard so we don't run twice / redeclare stuff if script is included more than once
+  if (window.recruitifyInitialized) return;
+  window.recruitifyInitialized = true;
 
-        function switchToLogin() {
-            loginToggle.classList.add('active');
-            signupToggle.classList.remove('active');
-            loginForm.classList.add('active');
-            signupForm.classList.remove('active');
-            authTitle.textContent = 'RECRUITER LOGIN';
-        }
+  document.addEventListener('DOMContentLoaded', function () {
+    // Select elements (same IDs as your HTML)
+    const loginToggle = document.getElementById('loginToggle');
+    const signupToggle = document.getElementById('signupToggle');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const authTitle = document.getElementById('authTitle');
 
-        function switchToSignup() {
-            signupToggle.classList.add('active');
-            loginToggle.classList.remove('active');
-            signupForm.classList.add('active');
-            loginForm.classList.remove('active');
-            authTitle.textContent = 'RECRUITER SIGNUP';
-        }
+    // Toggle functions (unchanged behavior)
+    function switchToLogin() {
+      loginToggle.classList.add('active');
+      signupToggle.classList.remove('active');
+      loginForm.classList.add('active');
+      signupForm.classList.remove('active');
+      authTitle.textContent = 'RECRUITER LOGIN';
+    }
 
-        loginToggle.addEventListener('click', switchToLogin);
-        signupToggle.addEventListener('click', switchToSignup);
+    function switchToSignup() {
+      signupToggle.classList.add('active');
+      loginToggle.classList.remove('active');
+      signupForm.classList.add('active');
+      loginForm.classList.remove('active');
+      authTitle.textContent = 'RECRUITER SIGNUP';
+    }
 
-        // Form submissions
-        loginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log('Login form submitted');
-            // Add your login logic here
-        });
+    // Wire toggle clicks
+    if (loginToggle) loginToggle.addEventListener('click', switchToLogin);
+    if (signupToggle) signupToggle.addEventListener('click', switchToSignup);
 
-        signupForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log('Signup form submitted');
-            // Add your signup logic here
-        });
+    // Keep inline onclick links working (your <a onclick="switchToSignup()">... </a>)
+    window.switchToSignup = switchToSignup;
+    window.switchToLogin = switchToLogin;
 
-        // Add some interactive effects
-        document.querySelectorAll('.form-input').forEach(input => {
-            input.addEventListener('focus', function () {
-                this.parentElement.style.transform = 'scale(1.02)';
-            });
+    // Login form submit (keeps previous behaviour — no page redirect here)
+    if (loginForm) {
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('Login form submitted');
+        // Add login logic here if needed
+        // Example: on successful login -> redirect:
+        // window.location.assign('./recruiterprofile.html');
+      });
+    }
 
-            input.addEventListener('blur', function () {
-                this.parentElement.style.transform = 'scale(1)';
-            });
-        });
-    </script>
+    // Signup form submit -> redirect to recruiterprofile.html
+    if (signupForm) {
+      signupForm.addEventListener('submit', function (e) {
+        e.preventDefault(); // keeps client-side behavior consistent
+        console.log('Signup form submitted');
+
+        // Adjust this path if your files are in a different folder.
+        // Because your repo root shows both files in same folder, use a relative path:
+        const target = './recruiterprofile.html';
+
+        // Small delay so any UI feedback can show before navigating (optional)
+        setTimeout(function () {
+          // Use assign so back button works as expected
+          window.location.assign(target);
+        }, 80);
+      });
+    }
+
+    // Focus/blur subtle effects (same as before)
+    document.querySelectorAll('.form-input').forEach(input => {
+      input.addEventListener('focus', function () {
+        if (this.parentElement) this.parentElement.style.transform = 'scale(1.02)';
+      });
+      input.addEventListener('blur', function () {
+        if (this.parentElement) this.parentElement.style.transform = 'scale(1)';
+      });
+    });
+
+  }); // DOMContentLoaded
+})(); // IIFE
+</script>
+
 </body>
 
 </html>
