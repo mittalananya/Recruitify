@@ -794,6 +794,871 @@
       // loadDashboard();
     });
 
+    // ========== LOAD RECRUITER DASHBOARD DATA ==========
+
+// Load recruiter data when page opens
+window.addEventListener('DOMContentLoaded', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    if (!recruiterId) {
+        alert('Please login first');
+        window.location.href = 'recruiterlogin.html';
+        return;
+    }
+    
+    try {
+        // Fetch dashboard data
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const recruiter = data.recruiter;
+            
+            // Update greeting with company name
+            const companyName = recruiter.company_name || 'Guest';
+            document.getElementById('greetingHi').textContent = `Hello, ${companyName}!`;
+            document.getElementById('greetingSub').textContent = 'Ready to recruit?';
+            
+            // Update profile circle with first letter
+            const profileCircle = document.querySelector('.profile-circle');
+            profileCircle.textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update brand logo
+            document.getElementById('brandLogo').textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+            
+            // Set other stats to 0 for now (you can add these counts later)
+            document.getElementById('statApps').textContent = '0';
+            document.getElementById('statShort').textContent = '0';
+            document.getElementById('statMatch').textContent = '0';
+            document.getElementById('quickApps').textContent = 'Applicants: 0';
+            document.getElementById('shortSnapshot').textContent = '0 candidates';
+            
+            // Store recruiter data globally for later use
+            window.recruiterData = recruiter;
+            
+            // Load company profile if completed
+            if (recruiter.profile_completed) {
+                loadCompanyProfileData(recruiter);
+            }
+        } else {
+            alert('Failed to load dashboard data');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Connection error. Make sure backend is running!');
+    }
+});
+
+// Load company profile data into form
+function loadCompanyProfileData(recruiter) {
+    document.getElementById('companyName').value = recruiter.company_name || '';
+    document.getElementById('companyGST').value = recruiter.gst_number || '';
+    document.getElementById('companyEmail').value = recruiter.email || '';
+    document.getElementById('companyPhone').value = recruiter.phone || '';
+    document.getElementById('companyWebsite').value = recruiter.website || '';
+    document.getElementById('companyIndustry').value = recruiter.industry || '';
+    document.getElementById('companyDesc').value = recruiter.about || '';
+}
+
+// Override the existing loadDashboard function
+async function loadDashboard() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    if (!recruiterId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Override loadCompanyProfile function
+async function loadCompanyProfile() {
+    if (window.recruiterData) {
+        loadCompanyProfileData(window.recruiterData);
+    }
+}
+
+// Logout function
+function doLogout() {
+    const confirm = window.confirm('Are you sure you want to logout?');
+    if (confirm) {
+        localStorage.removeItem('recruiterToken');
+        localStorage.removeItem('recruiterId');
+        localStorage.removeItem('recruiterName');
+        window.location.href = 'recruiterlogin.html';
+    }
+}
+
+// Update the Save Company Profile button
+document.getElementById('btnSaveCompany').addEventListener('click', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    const payload = {
+        recruiter_id: recruiterId,
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        address: '', // You can add address field if needed
+        about: document.getElementById('companyDesc').value.trim()
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Company profile saved successfully!');
+            
+            // Update greeting with company name
+            const companyName = document.getElementById('companyName').value.trim();
+            if (companyName) {
+                document.getElementById('greetingHi').textContent = `Hello, ${companyName.split(' ')[0]}!`;
+            }
+        } else {
+            alert(result.message || 'Failed to save profile');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Connection error!');
+    }
+});// ========== LOAD RECRUITER DASHBOARD DATA ==========
+
+// Load recruiter data when page opens
+window.addEventListener('DOMContentLoaded', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    if (!recruiterId) {
+        alert('Please login first');
+        window.location.href = 'recruiterlogin.html';
+        return;
+    }
+    
+    try {
+        // Fetch dashboard data
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const recruiter = data.recruiter;
+            
+            // Update greeting with company name
+            const companyName = recruiter.company_name || 'Guest';
+            document.getElementById('greetingHi').textContent = `Hello, ${companyName}!`;
+            document.getElementById('greetingSub').textContent = 'Ready to recruit?';
+            
+            // Update profile circle with first letter
+            const profileCircle = document.querySelector('.profile-circle');
+            profileCircle.textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update brand logo
+            document.getElementById('brandLogo').textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+            
+            // Set other stats to 0 for now (you can add these counts later)
+            document.getElementById('statApps').textContent = '0';
+            document.getElementById('statShort').textContent = '0';
+            document.getElementById('statMatch').textContent = '0';
+            document.getElementById('quickApps').textContent = 'Applicants: 0';
+            document.getElementById('shortSnapshot').textContent = '0 candidates';
+            
+            // Store recruiter data globally for later use
+            window.recruiterData = recruiter;
+            
+            // Load company profile if completed
+            if (recruiter.profile_completed) {
+                loadCompanyProfileData(recruiter);
+            }
+        } else {
+            alert('Failed to load dashboard data');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Connection error. Make sure backend is running!');
+    }
+});
+
+// Load company profile data into form
+function loadCompanyProfileData(recruiter) {
+    document.getElementById('companyName').value = recruiter.company_name || '';
+    document.getElementById('companyGST').value = recruiter.gst_number || '';
+    document.getElementById('companyEmail').value = recruiter.email || '';
+    document.getElementById('companyPhone').value = recruiter.phone || '';
+    document.getElementById('companyWebsite').value = recruiter.website || '';
+    document.getElementById('companyIndustry').value = recruiter.industry || '';
+    document.getElementById('companyDesc').value = recruiter.about || '';
+}
+
+// Override the existing loadDashboard function
+async function loadDashboard() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    if (!recruiterId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Override loadCompanyProfile function
+async function loadCompanyProfile() {
+    if (window.recruiterData) {
+        loadCompanyProfileData(window.recruiterData);
+    }
+}
+
+// Logout function
+function doLogout() {
+    const confirm = window.confirm('Are you sure you want to logout?');
+    if (confirm) {
+        localStorage.removeItem('recruiterToken');
+        localStorage.removeItem('recruiterId');
+        localStorage.removeItem('recruiterName');
+        window.location.href = 'recruiterlogin.html';
+    }
+}
+
+// Update the Save Company Profile button
+document.getElementById('btnSaveCompany').addEventListener('click', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    const payload = {
+        recruiter_id: recruiterId,
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        address: '', // You can add address field if needed
+        about: document.getElementById('companyDesc').value.trim()
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Company profile saved successfully!');
+            
+            // Update greeting with company name
+            const companyName = document.getElementById('companyName').value.trim();
+            if (companyName) {
+                document.getElementById('greetingHi').textContent = `Hello, ${companyName.split(' ')[0]}!`;
+            }
+        } else {
+            alert(result.message || 'Failed to save profile');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Connection error!');
+    }
+});// ========== LOAD RECRUITER DASHBOARD DATA ==========
+
+// Load recruiter data when page opens
+window.addEventListener('DOMContentLoaded', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    if (!recruiterId) {
+        alert('Please login first');
+        window.location.href = 'recruiterlogin.html';
+        return;
+    }
+    
+    try {
+        // Fetch dashboard data
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const recruiter = data.recruiter;
+            
+            // Update greeting with company name
+            const companyName = recruiter.company_name || 'Guest';
+            document.getElementById('greetingHi').textContent = `Hello, ${companyName}!`;
+            document.getElementById('greetingSub').textContent = 'Ready to recruit?';
+            
+            // Update profile circle with first letter
+            const profileCircle = document.querySelector('.profile-circle');
+            profileCircle.textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update brand logo
+            document.getElementById('brandLogo').textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+            
+            // Set other stats to 0 for now (you can add these counts later)
+            document.getElementById('statApps').textContent = '0';
+            document.getElementById('statShort').textContent = '0';
+            document.getElementById('statMatch').textContent = '0';
+            document.getElementById('quickApps').textContent = 'Applicants: 0';
+            document.getElementById('shortSnapshot').textContent = '0 candidates';
+            
+            // Store recruiter data globally for later use
+            window.recruiterData = recruiter;
+            
+            // Load company profile if completed
+            if (recruiter.profile_completed) {
+                loadCompanyProfileData(recruiter);
+            }
+        } else {
+            alert('Failed to load dashboard data');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Connection error. Make sure backend is running!');
+    }
+});
+
+// Load company profile data into form
+function loadCompanyProfileData(recruiter) {
+    document.getElementById('companyName').value = recruiter.company_name || '';
+    document.getElementById('companyGST').value = recruiter.gst_number || '';
+    document.getElementById('companyEmail').value = recruiter.email || '';
+    document.getElementById('companyPhone').value = recruiter.phone || '';
+    document.getElementById('companyWebsite').value = recruiter.website || '';
+    document.getElementById('companyIndustry').value = recruiter.industry || '';
+    document.getElementById('companyDesc').value = recruiter.about || '';
+}
+
+// Override the existing loadDashboard function
+async function loadDashboard() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    if (!recruiterId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Override loadCompanyProfile function
+async function loadCompanyProfile() {
+    if (window.recruiterData) {
+        loadCompanyProfileData(window.recruiterData);
+    }
+}
+
+// Logout function
+function doLogout() {
+    const confirm = window.confirm('Are you sure you want to logout?');
+    if (confirm) {
+        localStorage.removeItem('recruiterToken');
+        localStorage.removeItem('recruiterId');
+        localStorage.removeItem('recruiterName');
+        window.location.href = 'recruiterlogin.html';
+    }
+}
+
+// Update the Save Company Profile button
+document.getElementById('btnSaveCompany').addEventListener('click', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    const payload = {
+        recruiter_id: recruiterId,
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        address: '', // You can add address field if needed
+        about: document.getElementById('companyDesc').value.trim()
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Company profile saved successfully!');
+            
+            // Update greeting with company name
+            const companyName = document.getElementById('companyName').value.trim();
+            if (companyName) {
+                document.getElementById('greetingHi').textContent = `Hello, ${companyName.split(' ')[0]}!`;
+            }
+        } else {
+            alert(result.message || 'Failed to save profile');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Connection error!');
+    }
+});// ========== LOAD RECRUITER DASHBOARD DATA ==========
+
+// Load recruiter data when page opens
+window.addEventListener('DOMContentLoaded', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    if (!recruiterId) {
+        alert('Please login first');
+        window.location.href = 'recruiterlogin.html';
+        return;
+    }
+    
+    try {
+        // Fetch dashboard data
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const recruiter = data.recruiter;
+            
+            // Update greeting with company name
+            const companyName = recruiter.company_name || 'Guest';
+            document.getElementById('greetingHi').textContent = `Hello, ${companyName}!`;
+            document.getElementById('greetingSub').textContent = 'Ready to recruit?';
+            
+            // Update profile circle with first letter
+            const profileCircle = document.querySelector('.profile-circle');
+            profileCircle.textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update brand logo
+            document.getElementById('brandLogo').textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+            
+            // Set other stats to 0 for now (you can add these counts later)
+            document.getElementById('statApps').textContent = '0';
+            document.getElementById('statShort').textContent = '0';
+            document.getElementById('statMatch').textContent = '0';
+            document.getElementById('quickApps').textContent = 'Applicants: 0';
+            document.getElementById('shortSnapshot').textContent = '0 candidates';
+            
+            // Store recruiter data globally for later use
+            window.recruiterData = recruiter;
+            
+            // Load company profile if completed
+            if (recruiter.profile_completed) {
+                loadCompanyProfileData(recruiter);
+            }
+        } else {
+            alert('Failed to load dashboard data');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Connection error. Make sure backend is running!');
+    }
+});
+
+// Load company profile data into form
+function loadCompanyProfileData(recruiter) {
+    document.getElementById('companyName').value = recruiter.company_name || '';
+    document.getElementById('companyGST').value = recruiter.gst_number || '';
+    document.getElementById('companyEmail').value = recruiter.email || '';
+    document.getElementById('companyPhone').value = recruiter.phone || '';
+    document.getElementById('companyWebsite').value = recruiter.website || '';
+    document.getElementById('companyIndustry').value = recruiter.industry || '';
+    document.getElementById('companyDesc').value = recruiter.about || '';
+}
+
+// Override the existing loadDashboard function
+async function loadDashboard() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    if (!recruiterId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Override loadCompanyProfile function
+async function loadCompanyProfile() {
+    if (window.recruiterData) {
+        loadCompanyProfileData(window.recruiterData);
+    }
+}
+
+// Logout function
+function doLogout() {
+    const confirm = window.confirm('Are you sure you want to logout?');
+    if (confirm) {
+        localStorage.removeItem('recruiterToken');
+        localStorage.removeItem('recruiterId');
+        localStorage.removeItem('recruiterName');
+        window.location.href = 'recruiterlogin.html';
+    }
+}
+
+// Update the Save Company Profile button
+document.getElementById('btnSaveCompany').addEventListener('click', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    const payload = {
+        recruiter_id: recruiterId,
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        address: '', // You can add address field if needed
+        about: document.getElementById('companyDesc').value.trim()
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Company profile saved successfully!');
+            
+            // Update greeting with company name
+            const companyName = document.getElementById('companyName').value.trim();
+            if (companyName) {
+                document.getElementById('greetingHi').textContent = `Hello, ${companyName.split(' ')[0]}!`;
+            }
+        } else {
+            alert(result.message || 'Failed to save profile');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Connection error!');
+    }
+});// ========== LOAD RECRUITER DASHBOARD DATA ==========
+
+// Load recruiter data when page opens
+window.addEventListener('DOMContentLoaded', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    if (!recruiterId) {
+        alert('Please login first');
+        window.location.href = 'recruiterlogin.html';
+        return;
+    }
+    
+    try {
+        // Fetch dashboard data
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const recruiter = data.recruiter;
+            
+            // Update greeting with company name
+            const companyName = recruiter.company_name || 'Guest';
+            document.getElementById('greetingHi').textContent = `Hello, ${companyName}!`;
+            document.getElementById('greetingSub').textContent = 'Ready to recruit?';
+            
+            // Update profile circle with first letter
+            const profileCircle = document.querySelector('.profile-circle');
+            profileCircle.textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update brand logo
+            document.getElementById('brandLogo').textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+            
+            // Set other stats to 0 for now (you can add these counts later)
+            document.getElementById('statApps').textContent = '0';
+            document.getElementById('statShort').textContent = '0';
+            document.getElementById('statMatch').textContent = '0';
+            document.getElementById('quickApps').textContent = 'Applicants: 0';
+            document.getElementById('shortSnapshot').textContent = '0 candidates';
+            
+            // Store recruiter data globally for later use
+            window.recruiterData = recruiter;
+            
+            // Load company profile if completed
+            if (recruiter.profile_completed) {
+                loadCompanyProfileData(recruiter);
+            }
+        } else {
+            alert('Failed to load dashboard data');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Connection error. Make sure backend is running!');
+    }
+});
+
+// Load company profile data into form
+function loadCompanyProfileData(recruiter) {
+    document.getElementById('companyName').value = recruiter.company_name || '';
+    document.getElementById('companyGST').value = recruiter.gst_number || '';
+    document.getElementById('companyEmail').value = recruiter.email || '';
+    document.getElementById('companyPhone').value = recruiter.phone || '';
+    document.getElementById('companyWebsite').value = recruiter.website || '';
+    document.getElementById('companyIndustry').value = recruiter.industry || '';
+    document.getElementById('companyDesc').value = recruiter.about || '';
+}
+
+// Override the existing loadDashboard function
+async function loadDashboard() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    if (!recruiterId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Override loadCompanyProfile function
+async function loadCompanyProfile() {
+    if (window.recruiterData) {
+        loadCompanyProfileData(window.recruiterData);
+    }
+}
+
+// Logout function
+function doLogout() {
+    const confirm = window.confirm('Are you sure you want to logout?');
+    if (confirm) {
+        localStorage.removeItem('recruiterToken');
+        localStorage.removeItem('recruiterId');
+        localStorage.removeItem('recruiterName');
+        window.location.href = 'recruiterlogin.html';
+    }
+}
+
+// Update the Save Company Profile button
+document.getElementById('btnSaveCompany').addEventListener('click', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    const payload = {
+        recruiter_id: recruiterId,
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        address: '', // You can add address field if needed
+        about: document.getElementById('companyDesc').value.trim()
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Company profile saved successfully!');
+            
+            // Update greeting with company name
+            const companyName = document.getElementById('companyName').value.trim();
+            if (companyName) {
+                document.getElementById('greetingHi').textContent = `Hello, ${companyName.split(' ')[0]}!`;
+            }
+        } else {
+            alert(result.message || 'Failed to save profile');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Connection error!');
+    }
+});// ========== LOAD RECRUITER DASHBOARD DATA ==========
+
+// Load recruiter data when page opens
+window.addEventListener('DOMContentLoaded', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    if (!recruiterId) {
+        alert('Please login first');
+        window.location.href = 'recruiterlogin.html';
+        return;
+    }
+    
+    try {
+        // Fetch dashboard data
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const recruiter = data.recruiter;
+            
+            // Update greeting with company name
+            const companyName = recruiter.company_name || 'Guest';
+            document.getElementById('greetingHi').textContent = `Hello, ${companyName}!`;
+            document.getElementById('greetingSub').textContent = 'Ready to recruit?';
+            
+            // Update profile circle with first letter
+            const profileCircle = document.querySelector('.profile-circle');
+            profileCircle.textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update brand logo
+            document.getElementById('brandLogo').textContent = companyName.charAt(0).toUpperCase();
+            
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+            
+            // Set other stats to 0 for now (you can add these counts later)
+            document.getElementById('statApps').textContent = '0';
+            document.getElementById('statShort').textContent = '0';
+            document.getElementById('statMatch').textContent = '0';
+            document.getElementById('quickApps').textContent = 'Applicants: 0';
+            document.getElementById('shortSnapshot').textContent = '0 candidates';
+            
+            // Store recruiter data globally for later use
+            window.recruiterData = recruiter;
+            
+            // Load company profile if completed
+            if (recruiter.profile_completed) {
+                loadCompanyProfileData(recruiter);
+            }
+        } else {
+            alert('Failed to load dashboard data');
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        alert('Connection error. Make sure backend is running!');
+    }
+});
+
+// Load company profile data into form
+function loadCompanyProfileData(recruiter) {
+    document.getElementById('companyName').value = recruiter.company_name || '';
+    document.getElementById('companyGST').value = recruiter.gst_number || '';
+    document.getElementById('companyEmail').value = recruiter.email || '';
+    document.getElementById('companyPhone').value = recruiter.phone || '';
+    document.getElementById('companyWebsite').value = recruiter.website || '';
+    document.getElementById('companyIndustry').value = recruiter.industry || '';
+    document.getElementById('companyDesc').value = recruiter.about || '';
+}
+
+// Override the existing loadDashboard function
+async function loadDashboard() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    if (!recruiterId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/recruiter/dashboard/${recruiterId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update stats
+            document.getElementById('statVac').textContent = data.jobsCount || '0';
+            document.getElementById('quickVac').textContent = `Vacancies: ${data.jobsCount || '0'}`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+// Override loadCompanyProfile function
+async function loadCompanyProfile() {
+    if (window.recruiterData) {
+        loadCompanyProfileData(window.recruiterData);
+    }
+}
+
+// Logout function
+function doLogout() {
+    const confirm = window.confirm('Are you sure you want to logout?');
+    if (confirm) {
+        localStorage.removeItem('recruiterToken');
+        localStorage.removeItem('recruiterId');
+        localStorage.removeItem('recruiterName');
+        window.location.href = 'recruiterlogin.html';
+    }
+}
+
+// Update the Save Company Profile button
+document.getElementById('btnSaveCompany').addEventListener('click', async function() {
+    const recruiterId = localStorage.getItem('recruiterId');
+    
+    const payload = {
+        recruiter_id: recruiterId,
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        address: '', // You can add address field if needed
+        about: document.getElementById('companyDesc').value.trim()
+    };
+    
+    try {
+        const response = await fetch('http://localhost:3000/api/recruiter/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Company profile saved successfully!');
+            
+            // Update greeting with company name
+            const companyName = document.getElementById('companyName').value.trim();
+            if (companyName) {
+                document.getElementById('greetingHi').textContent = `Hello, ${companyName.split(' ')[0]}!`;
+            }
+        } else {
+            alert(result.message || 'Failed to save profile');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Connection error!');
+    }
+});
   </script>
 </body>
 </html>
