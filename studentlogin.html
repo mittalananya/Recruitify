@@ -574,13 +574,7 @@ signupForm.addEventListener('submit', async function (e) {
     const rollNumber = e.target.querySelector('input[placeholder="Roll Number (Unique ID)"]').value;
     const fullName = e.target.querySelector('input[placeholder="Full Name"]').value;
     const email = e.target.querySelector('input[placeholder="Email Address"]').value;
-    const password = e.target.querySelector('input[placeholder="Create Password"]').value;
-    const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
-
-    if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-    }
+   
 
     try {
         const response = await fetch('http://localhost:5000/api/student/signup', {
