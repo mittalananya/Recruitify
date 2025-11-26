@@ -504,21 +504,18 @@
         </form>
     </div>
 
-   <script>
+  <script>
 (function(){
-  // Guard so we don't run twice / redeclare stuff if script is included more than once
   if (window.recruitifyInitialized) return;
   window.recruitifyInitialized = true;
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Select elements (same IDs as your HTML)
     const loginToggle = document.getElementById('loginToggle');
     const signupToggle = document.getElementById('signupToggle');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const authTitle = document.getElementById('authTitle');
 
-    // Toggle functions (unchanged behavior)
     function switchToLogin() {
       loginToggle.classList.add('active');
       signupToggle.classList.remove('active');
@@ -535,55 +532,98 @@
       authTitle.textContent = 'RECRUITER SIGNUP';
     }
 
-    // Wire toggle clicks
     if (loginToggle) loginToggle.addEventListener('click', switchToLogin);
     if (signupToggle) signupToggle.addEventListener('click', switchToSignup);
 
-    // Keep inline onclick links working (your <a onclick="switchToSignup()">... </a>)
     window.switchToSignup = switchToSignup;
     window.switchToLogin = switchToLogin;
 
-    // Login form submit (keeps previous behaviour — no page redirect here)
-    if (loginForm) {
-      loginForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        console.log('Login form submitted');
-        // Add login logic here if needed
-        // Example: on successful login -> redirect:
-        // window.location.assign('./recruiterprofile.html');
+    // -------- LOGIN FORM SUBMIT --------
+    // -------- LOGIN FORM SUBMIT --------
+if (loginForm) {
+  loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = this.querySelector('input[type="email"]').value.trim();
+    const password = this.querySelector('input[type="password"]').value.trim();
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
+
+      const result = await response.json();
+
+      if(result.success) {
+        if(result.token) localStorage.setItem('token', result.token);
+
+        // Redirect to recruiter dashboard
+        window.location.href = 'recruiterdashboard.html';
+      } else {
+        alert(result.message || 'Invalid email or password');
+      }
+
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Something went wrong. Please try again later.');
+    }
+  });
+}
+
+// -------- SIGNUP FORM SUBMIT --------
+if (signupForm) {
+  signupForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const companyName = this.querySelector('input[placeholder="Company Name"]').value.trim();
+    const gstNumber = this.querySelector('input[placeholder="GST Number"]').value.trim();
+    const email = this.querySelector('input[placeholder="Official Email Address"]').value.trim();
+    const password = this.querySelector('input[placeholder="Create Password"]').value.trim();
+    const confirmPassword = this.querySelector('input[placeholder="Confirm Password"]').value.trim();
+
+    if(password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
     }
 
-    // Signup form submit -> redirect to recruiterprofile.html
-    if (signupForm) {
-      signupForm.addEventListener('submit', function (e) {
-        e.preventDefault(); // keeps client-side behavior consistent
-        console.log('Signup form submitted');
-
-        // Adjust this path if your files are in a different folder.
-        // Because your repo root shows both files in same folder, use a relative path:
-        const target = 'recruiterprofile.html';
-
-        // Small delay so any UI feedback can show before navigating (optional)
-        setTimeout(function () {
-          // Use assign so back button works as expected
-          window.location.assign(target);
-        }, 80);
+    try {
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName, gstNumber, email, password })
       });
-    }
 
-    // Focus/blur subtle effects (same as before)
+      const result = await response.json();
+
+      if(result.success) {
+        // Redirect to recruiter profile page after signup
+        window.location.href = 'recruiterprofile.html';
+      } else {
+        alert(result.message || 'Signup failed.');
+      }
+
+    } catch(err) {
+      console.error('Signup error:', err);
+      alert('Something went wrong. Please try again later.');
+    }
+  });
+}
+
+
+    // Focus/blur subtle effects
     document.querySelectorAll('.form-input').forEach(input => {
       input.addEventListener('focus', function () {
-        if (this.parentElement) this.parentElement.style.transform = 'scale(1.02)';
+        if(this.parentElement) this.parentElement.style.transform = 'scale(1.02)';
       });
       input.addEventListener('blur', function () {
-        if (this.parentElement) this.parentElement.style.transform = 'scale(1)';
+        if(this.parentElement) this.parentElement.style.transform = 'scale(1)';
       });
     });
 
-  }); // DOMContentLoaded
-})(); // IIFE
+  });
+})();
 </script>
 
 </body>
