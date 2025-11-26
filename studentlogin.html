@@ -548,8 +548,7 @@ loginForm.addEventListener('submit', async function (e) {
                 password: password
             })
         });
-
-        const data = await response.json();
+         const data = await response.json();
 
         if (response.ok) {
             localStorage.setItem('token', data.token);
@@ -567,14 +566,23 @@ loginForm.addEventListener('submit', async function (e) {
     }
 });
 
-     // Student Signup
+
+
+// Student Signup - FIXED
 signupForm.addEventListener('submit', async function (e) {
     e.preventDefault();
     
     const rollNumber = e.target.querySelector('input[placeholder="Roll Number (Unique ID)"]').value;
     const fullName = e.target.querySelector('input[placeholder="Full Name"]').value;
     const email = e.target.querySelector('input[placeholder="Email Address"]').value;
-   
+    const password = e.target.querySelector('input[placeholder="Create Password"]').value;
+    const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
 
     try {
         const response = await fetch('http://localhost:5000/api/student/signup', {
@@ -589,6 +597,19 @@ signupForm.addEventListener('submit', async function (e) {
                 password: password
             })
         });
+         const data = await response.json();
+
+        if (response.ok) {
+            alert('Signup successful! Please login.');
+            switchToLogin();
+        } else {
+            alert(data.error || 'Signup failed');
+        }
+    } catch (error) {
+        alert('Connection error. Make sure backend is running!');
+        console.error(error);
+    }
+});
 
         const data = await response.json();
 
