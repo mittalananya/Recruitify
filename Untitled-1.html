@@ -1,0 +1,1122 @@
+
+<!--
+  Front-end student dashboard for Recruitify. This file contains the original HTML/CSS/JS with
+  inline comments and a "Developer Notes" section at top describing DOM IDs, events, expected
+  API endpoints, payload shapes, validation rules, and integration tips for your backend team.
+
+  IMPORTANT: Use the IDs and endpoints below when wiring the backend. The front-end expects JSON
+  responses in the formats shown. Authentication is not implemented on the client — recommend using
+  an Authorization header (Bearer token) and returning 401/403 when unauthorized.
+-->
+
+<!-- =========================
+     DEVELOPER NOTES (BACKEND)
+     =========================
+
+API Endpoints (suggested):
+  GET  /api/profile
+    Response: 200 OK
+    Body: {
+      "name": "Ananya Mittal",
+      "tagline": "CS Undergrad @ Kasturba DSEU",
+      "avatarInitials": "A",
+      "cgpa": 9.15,
+      "skillsCount": 4,
+      "projectsCount": 2,
+      "jobMatchesCount": 5,
+      "academic": { "college":"Kasturba DSEU", "branch":"CSE", "year":2, ... }
+    }
+
+  PUT  /api/profile
+    Request body: { name, tagline, cgpa, academic: {...} }
+    Response: 200 OK, updated profile JSON
+
+  GET  /api/skills
+    Response: 200 OK
+    Body: { "hard": [ {skillObject}, ... ], "soft": [ {skillObject}, ... ] }
+
+  POST /api/skills
+    Request body (hard skill):
+      {
+        "type": "hard",
+        "name": "React.js",
+        "description": "Built multiple SPAs",
+        "project": { "title": "E-commerce", "description": "...", "link": "https://..." }
+      }
+    Request body (soft skill):
+      { "type": "soft", "name": "Leadership", "description": "Led a team of 5" }
+    Response: 201 Created, returns created skill
+
+  GET  /api/peers?search=...        -> list of peer profiles
+  GET  /api/jobs?search=...         -> list of job postings
+  GET  /api/shortlisted             -> list of recruiters who shortlisted the user
+  POST /api/interests               -> mark interest in a job
+
+Validation rules (frontend enforced, backend must also validate):
+  - For hard skills: name (non-empty), description (non-empty), project.title (non-empty), project.link must be a valid URL
+  - For soft skills: name, description required
+
+Auth & Headers:
+  - Use Authorization: Bearer <token>
+  - Accept: application/json
+  - Content-Type: application/json for POST/PUT
+
+Sample Responses (minimal):
+  GET /api/skills ->
+    {
+      "hard": [ {"id":1,"name":"React.js","description":"...","project":{"title":"Shop","link":"https://..."}} ],
+      "soft": [ {"id":2,"name":"Communication","description":"..."} ]
+    }
+
+UI mapping (DOM IDs & usage) - Backend should populate these fields on initial page load or when requested:
+  - #welcomeMessage        => "Hello, <firstName>!"
+  - #profileAvatar         => initial or avatar image (string or image URL)
+  - #profilePhoto          => large avatar shown in profile card
+  - #profileName           => profile.name
+  - #profileTagline        => profile.tagline
+  - #skillsCount           => number of skills
+  - #projectsCount         => number of projects (derived)
+  - #jobMatchesCount       => number of matched jobs
+  - #cgpaDisplay           => cgpa value or "--"
+  - #academicDetails       => HTML block listing academic info
+  - #hardSkillsContainer   => render list of hard skill cards
+  - #softSkillsContainer   => render list of soft skill cards
+  - #peersContainer        => list of peer cards
+  - #jobsContainer         => list of job cards
+  - #shortlistedContainer  => list of shortlist entries
+  - #interestsContainer    => list of applied/interested jobs
+  - #skillModal            => modal wrapper (show/hide)
+  - #skillForm             => form element (submit handled client-side)
+  - Form inputs: #skillType, #skillName, #skillDescription, #projectTitle, #projectDescription, #projectLink
+
+Notes & Integration tips:
+  - The frontend currently logs the skill payload and shows an alert. Replace the handler in
+    `skillForm` submit listener with a fetch/axios call to POST /api/skills and then update the DOM
+    (add the new skill to the relevant container and increment #skillsCount).
+  - Keep CORS enabled on the backend and return JSON error messages with {error: "message"}.
+  - Return created timestamps and IDs for resources so the frontend can reference/update/delete later.
+  - Consider returning computed fields such as projectsCount and skillsCount to avoid client computation.
+  - For better UX, make endpoints support pagination for peers/jobs (e.g., ?page=1&size=20).
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitify - Student Dashboard</title>
+    <style>
+        /* Styles unchanged from your original file. Kept compact here for readability. */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dusky-rose: #D9BCAF;
+            --thistle: #8A9688;
+            --hawthorne-green: #283D3B;
+            --royal-scepter: #795663;
+            --blue-noir: #011627;
+            --light-bg: #fafafa;
+            --white: #ffffff;
+            --success: #27ae60;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #f5f5f5 100%);
+            min-height: 100vh;
+            color: var(--hawthorne-green);
+        }
+
+        .header {
+            background: var(--white);
+            border-bottom: 2px solid var(--dusky-rose);
+            box-shadow: 0 2px 20px rgba(217, 188, 175, 0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-circle {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(217, 188, 175, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 32px;
+            color: var(--hawthorne-green);
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: var(--royal-scepter);
+            font-weight: 500;
+        }
+
+        .user-welcome {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .welcome-text h2 {
+            font-size: 24px;
+            color: var(--hawthorne-green);
+            font-weight: 600;
+        }
+
+        .welcome-text p {
+            color: var(--thistle);
+            font-size: 14px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(217, 188, 175, 0.2);
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-container {
+            background: var(--white);
+            border-bottom: 1px solid rgba(217, 188, 175, 0.3);
+        }
+
+        .navbar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+        }
+
+        .nav-item {
+            padding: 18px 30px;
+            background: transparent;
+            border: none;
+            color: var(--thistle);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            color: var(--dusky-rose);
+            background: rgba(217, 188, 175, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--dusky-rose);
+            border-bottom-color: var(--dusky-rose);
+            background: rgba(217, 188, 175, 0.15);
+            font-weight: 600;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(217, 188, 175, 0.15);
+            border: 1px solid rgba(217, 188, 175, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            color: var(--hawthorne-green);
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            box-shadow: 0 8px 25px rgba(217, 188, 175, 0.3);
+        }
+
+        .profile-info h2 {
+            font-size: 32px;
+            color: var(--hawthorne-green);
+            margin-bottom: 8px;
+        }
+
+        .profile-tagline {
+            color: var(--royal-scepter);
+            font-size: 18px;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--dusky-rose), rgba(217, 188, 175, 0.8));
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(217, 188, 175, 0.3);
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(217, 188, 175, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(217, 188, 175, 0.4);
+        }
+
+        .skills-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .skill-category {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(138, 150, 136, 0.1);
+            border: 1px solid rgba(138, 150, 136, 0.2);
+        }
+
+        .category-title {
+            font-size: 22px;
+            color: var(--hawthorne-green);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .skill-item {
+            background: linear-gradient(135deg, rgba(217, 188, 175, 0.1), rgba(138, 150, 136, 0.05));
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(217, 188, 175, 0.2);
+        }
+
+        .skill-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(217, 188, 175, 0.2);
+        }
+
+        .skill-name {
+            font-weight: 600;
+            color: var(--hawthorne-green);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .skill-description {
+            color: var(--thistle);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .project-link {
+            display: inline-block;
+            background: var(--royal-scepter);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .project-link:hover {
+            background: var(--dusky-rose);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--thistle);
+            border-radius: 20px;
+            border: 2px dashed rgba(138, 150, 136, 0.3);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: var(--dusky-rose);
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--hawthorne-green);
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .browse-tabs {
+            display: flex;
+            gap: 0;
+            background: rgba(217, 188, 175, 0.1);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            color: var(--thistle);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            color: white;
+            box-shadow: 0 4px 15px rgba(217, 188, 175, 0.3);
+        }
+
+        .browse-content {
+            display: none;
+        }
+
+        .browse-content.active {
+            display: block;
+        }
+
+        .search-bar {
+            background: var(--white);
+            border: 2px solid rgba(217, 188, 175, 0.3);
+            border-radius: 15px;
+            padding: 15px 20px;
+            width: 100%;
+            color: var(--hawthorne-green);
+            font-size: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(217, 188, 175, 0.1);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--dusky-rose);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--hawthorne-green);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .skill-type-tabs {
+            display: flex;
+            gap: 0;
+            background: rgba(217, 188, 175, 0.1);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 25px;
+        }
+
+        .skill-type-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--hawthorne-green);
+        }
+
+        .skill-type-btn.active {
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--hawthorne-green);
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(217, 188, 175, 0.3);
+            border-radius: 10px;
+            background: rgba(217, 188, 175, 0.05);
+            color: var(--hawthorne-green);
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--dusky-rose);
+        }
+
+        .project-fields {
+            display: none;
+        }
+
+        .project-fields.active {
+            display: block;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background: rgba(138, 150, 136, 0.2);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--hawthorne-green);
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+        }
+
+        @media (max-width: 1024px) {
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-circle">R</div>
+                <div class="logo-text">
+                    <h1>RECRUITIFY</h1>
+                    <p>Beyond Resumes</p>
+                </div>
+            </div>
+            <div class="user-welcome">
+                <div class="welcome-text">
+                    <!-- #welcomeMessage will be filled from /api/profile -->
+                    <h2 id="welcomeMessage">Hello, Guest!</h2>
+                    <p>Ready to showcase your skills?</p>
+                </div>
+                <!-- #profileAvatar clickable; can open profile settings or upload avatar -->
+                <div class="profile-avatar" id="profileAvatar">?</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="nav-container">
+        <nav class="navbar">
+            <!-- Navigation buttons: call showSection('...') to show each section. Backend should set default 'active' based on route if needed. -->
+            <button class="nav-item active" onclick="showSection('profile')">My Profile</button>
+            <button class="nav-item" onclick="showSection('skills')">My Skills</button>
+            <button class="nav-item" onclick="showSection('browse')">Browse</button>
+            <button class="nav-item" onclick="showSection('shortlisted')">Shortlisted by Recruiters</button>
+            <button class="nav-item" onclick="showSection('interests')">Job Interests</button>
+        </nav>
+    </div>
+
+    <main class="main-container">
+        <!-- Profile Section -->
+        <section class="dashboard-section active" id="profile-section">
+            <div class="card">
+                <div class="profile-header">
+                    <!-- #profilePhoto: large avatar / initials -->
+                    <div class="profile-photo" id="profilePhoto">?</div>
+                    <div class="profile-info">
+                        <!-- #profileName, #profileTagline updated from profile API -->
+                        <h2 id="profileName">Complete your profile</h2>
+                        <p class="profile-tagline" id="profileTagline">Add a tagline to describe yourself</p>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <!-- #skillsCount should be a number -->
+                                <div class="stat-number" id="skillsCount">0</div>
+                                <div class="stat-label">Skills Added</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="projectsCount">0</div>
+                                <div class="stat-label">Projects</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="jobMatchesCount">0</div>
+                                <div class="stat-label">Job Matches</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="cgpaDisplay">--</div>
+                                <div class="stat-label">CGPA</div>
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="editProfile()" style="margin-top: 20px;">Edit
+                            Profile</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-title"> Academic Information</h3>
+                <!-- #academicDetails: backend should render a block of academic data here (college, branch, year, transcripts link etc.) -->
+                <div id="academicDetails">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>Complete Your Profile</h3>
+                        <p>Add your academic information to help recruiters find you</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="dashboard-section" id="skills-section">
+            <div class="skills-header">
+                <h2 class="section-title"> My Skills Portfolio</h2>
+                <button class="btn-primary" onclick="openSkillModal()">+ Add Skill</button>
+            </div>
+
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h3 class="category-title"> Hard Skills</h3>
+                    <!-- #hardSkillsContainer: backend or frontend renderer will append skill-item blocks here -->
+                    <div id="hardSkillsContainer">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💻</div>
+                            <h3>Add Your First Hard Skill</h3>
+                            <p>Showcase your technical abilities with project links</p>
+                            <button class="btn-primary" onclick="openSkillModal('hard')">Add Hard Skill</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skill-category">
+                    <h3 class="category-title"> Soft Skills</h3>
+                    <!-- #softSkillsContainer similar to hard -->
+                    <div id="softSkillsContainer">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🌟</div>
+                            <h3>Add Your First Soft Skill</h3>
+                            <p>Highlight your interpersonal and leadership abilities</p>
+                            <button class="btn-primary" onclick="openSkillModal('soft')">Add Soft Skill</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Browse Section -->
+        <section class="dashboard-section" id="browse-section">
+            <div class="browse-tabs">
+                <button class="tab-btn active" onclick="showBrowseContent('peers')">Browse Peers</button>
+                <button class="tab-btn" onclick="showBrowseContent('jobs')">Browse Jobs</button>
+            </div>
+
+            <div class="browse-content active" id="peers-content">
+                <input type="text" class="search-bar" placeholder="Search peers by name, branch, or skills...">
+                <!-- #peersContainer: populate with peer cards -> recommended API GET /api/peers -->
+                <div class="cards-grid" id="peersContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <h3>No Peers Found Yet</h3>
+                        <p>Check back later when more students join Recruitify</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="browse-content" id="jobs-content">
+                <input type="text" class="search-bar" placeholder="Search jobs by title, company...">
+                <!-- #jobsContainer: populate with job cards -> recommended API GET /api/jobs -->
+                <div class="cards-grid" id="jobsContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💼</div>
+                        <h3>No Job Openings Yet</h3>
+                        <p>Recruiters haven't posted any jobs yet. Check back soon!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shortlisted Section -->
+        <section class="dashboard-section" id="shortlisted-section">
+            <h2 class="section-title">⭐ Shortlisted by Recruiters</h2>
+            <!-- #shortlistedContainer -> GET /api/shortlisted -->
+            <div id="shortlistedContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎯</div>
+                    <h3>No Shortlists Yet</h3>
+                    <p>Keep building your profile and adding skills. Recruiters will find you!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Job Interests Section -->
+        <section class="dashboard-section" id="interests-section">
+            <h2 class="section-title"> My Job Interests</h2>
+            <!-- #interestsContainer -> GET /api/interests (or /api/applications) -->
+            <div id="interestsContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>No Applications Yet</h3>
+                    <p>Browse jobs and click "Interested" to apply</p>
+                    <button class="btn-primary" onclick="showSection('browse')">Browse Jobs</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Skill Modal -->
+    <div class="modal" id="skillModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Add New Skill</h2>
+
+            <div class="skill-type-tabs">
+                <!-- Buttons toggle skill type for the modal. Default is 'hard' -->
+                <button class="skill-type-btn active" onclick="selectSkillType('hard')">💼 Hard Skill</button>
+                <button class="skill-type-btn" onclick="selectSkillType('soft')">🤝 Soft Skill</button>
+            </div>
+
+            <form id="skillForm">
+                <!-- #skillType holds 'hard' or 'soft' -->
+                <input type="hidden" id="skillType" value="hard">
+
+                <div class="form-group">
+                    <label class="form-label">Skill Name *</label>
+                    <!-- #skillName required -->
+                    <input type="text" class="form-input" id="skillName" placeholder="e.g., React.js, Leadership"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <!-- #skillDescription required -->
+                    <textarea class="form-textarea" id="skillDescription" placeholder="Describe your proficiency..."
+                        required></textarea>
+                </div>
+
+                <div class="project-fields active" id="projectFields">
+                    <!-- Project fields are shown only for hard skills. The JS toggles required= true/false accordingly. -->
+                    <div class="form-group">
+                        <label class="form-label">Project Title *</label>
+                        <input type="text" class="form-input" id="projectTitle" placeholder="e.g., E-commerce Website">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Description</label>
+                        <textarea class="form-textarea" id="projectDescription"
+                            placeholder="Brief description..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Link *</label>
+                        <input type="url" class="form-input" id="projectLink" placeholder="https://github.com/...">
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeSkillModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Add Skill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /*
+          JavaScript behavior notes and inline comments below. When integrating with backend, replace
+          the console.log / alert calls with fetch/axios calls to the endpoints described in Developer Notes.
+        */
+
+        // Navigation: showSection switches the visible dashboard section by id.
+        // NOTE: original code references `event` implicitly; that works only when onclick handler is directly
+        // invoked from an HTML attribute (as it currently is). For robustness, it's better to accept the event
+        // as an argument or query the clicked element. We'll keep current behavior but recommend a small fix.
+        function showSection(sectionName) {
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            // WARNING: using global `event` is fragile in some environments. Recommended fix below.
+            try {
+                event.target.classList.add('active');
+            } catch (err) {
+                // fallback: find nav-item by data-section attribute or keep first as active
+                // No-op fallback; backend can set active nav if server-side rendering is used.
+            }
+        }
+
+        // Recommended alternative (if you change the HTML to pass `event`):
+        // function showSection(sectionName, e) { ... e.target.classList.add('active'); }
+
+        function showBrowseContent(contentType) {
+            document.querySelectorAll('.browse-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${contentType}-content`).classList.add('active');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            try {
+                event.target.classList.add('active');
+            } catch (err) {
+                // silent fallback
+            }
+        }
+
+        // Skills Modal control: open/close/select type
+        function openSkillModal(type = 'hard') {
+            document.getElementById('skillModal').classList.add('active');
+            document.getElementById('skillForm').reset();
+            selectSkillType(type);
+        }
+
+        function closeSkillModal() {
+            document.getElementById('skillModal').classList.remove('active');
+        }
+
+        function selectSkillType(type) {
+            document.getElementById('skillType').value = type;
+
+            document.querySelectorAll('.skill-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // using event.target here is fine for current inline onclick usage; see earlier note for robustness
+            try { event.target.classList.add('active'); } catch (err) { }
+
+            const projectFields = document.getElementById('projectFields');
+            const projectInputs = projectFields.querySelectorAll('input, textarea');
+
+            if (type === 'hard') {
+                // Show project fields and make them required for hard skills
+                projectFields.classList.add('active');
+                projectInputs.forEach(input => input.required = true);
+            } else {
+                // Hide project fields for soft skills
+                projectFields.classList.remove('active');
+                projectInputs.forEach(input => input.required = false);
+            }
+        }
+
+        // Form submission: currently logs payload and shows alert. Replace console.log with a fetch to your backend.
+        document.getElementById('skillForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const skillData = {
+                type: document.getElementById('skillType').value,
+                name: document.getElementById('skillName').value.trim(),
+                description: document.getElementById('skillDescription').value.trim(),
+                project: {
+                    title: document.getElementById('projectTitle').value.trim(),
+                    description: document.getElementById('projectDescription').value.trim(),
+                    link: document.getElementById('projectLink').value.trim()
+                }
+            };
+
+            // Frontend validation example (backend must also validate):
+            if (!skillData.name || !skillData.description) {
+                alert('Please provide the skill name and description.');
+                return;
+            }
+            if (skillData.type === 'hard') {
+                // basic URL check for project link
+                try {
+                    const url = new URL(skillData.project.link);
+                } catch (err) {
+                    alert('Please enter a valid project link (https://...).');
+                    return;
+                }
+            }
+
+            // TODO: replace with real API call. Example (fetch):
+            // fetch('/api/skills', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer <token>'}, body: JSON.stringify(skillData) })
+            //   .then(res => res.json())
+            //   .then(createdSkill => { /* update DOM, increment counts */ })
+            //   .catch(err => { alert('Failed to save skill'); });
+
+            console.log('Skill to be added:', skillData);
+            alert('Skill will be saved when backend is connected!');
+            closeSkillModal();
+        });
+
+        function editProfile() {
+            // This placeholder can be changed to open a profile edit modal or navigate to a profile edit page
+            alert('Profile editing will be implemented by your backend team!');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('skillModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeSkillModal();
+            }
+        });
+
+        // Utility: render functions the backend can call after fetching data
+        // Example: call populateProfile(profileJson) after GET /api/profile returns
+        function populateProfile(profile) {
+            // profile: { name, tagline, avatarInitials, cgpa, skillsCount, projectsCount, jobMatchesCount }
+            if (!profile) return;
+            const firstName = (profile.name || 'Guest').split(' ')[0];
+            document.getElementById('welcomeMessage').textContent = `Hello, ${firstName}!`;
+            document.getElementById('profileAvatar').textContent = profile.avatarInitials || '?';
+            document.getElementById('profilePhoto').textContent = profile.avatarInitials || '?';
+            document.getElementById('profileName').textContent = profile.name || 'Complete your profile';
+            document.getElementById('profileTagline').textContent = profile.tagline || 'Add a tagline to describe yourself';
+            document.getElementById('skillsCount').textContent = profile.skillsCount != null ? profile.skillsCount : 0;
+            document.getElementById('projectsCount').textContent = profile.projectsCount != null ? profile.projectsCount : 0;
+            document.getElementById('jobMatchesCount').textContent = profile.jobMatchesCount != null ? profile.jobMatchesCount : 0;
+            document.getElementById('cgpaDisplay').textContent = profile.cgpa != null ? profile.cgpa : '--';
+
+            // Academic details: build HTML block (backend may instead return pre-rendered HTML)
+            if (profile.academic) {
+                const a = profile.academic;
+                const html = `\n                    <div class="profile-education">\n                      <strong>${a.college || ''}</strong> — ${a.branch || ''} (Year ${a.year || ''})<br/>\n                      <small>${a.details || ''}</small>\n                    </div>`;
+                document.getElementById('academicDetails').innerHTML = html;
+            }
+        }
+
+        // Example renderer for skills after GET /api/skills -> { hard: [...], soft: [...] }
+        function renderSkills(skillsJson) {
+            const hardContainer = document.getElementById('hardSkillsContainer');
+            const softContainer = document.getElementById('softSkillsContainer');
+
+            // Clear existing content
+            hardContainer.innerHTML = '';
+            softContainer.innerHTML = '';
+
+            if (Array.isArray(skillsJson.hard) && skillsJson.hard.length) {
+                skillsJson.hard.forEach(s => {
+                    const block = document.createElement('div');
+                    block.className = 'skill-item';
+                    block.innerHTML = `<div class="skill-name">${s.name}</div><div class="skill-description">${s.description}</div>` + (s.project && s.project.link ? `<a class="project-link" href="${s.project.link}" target="_blank">View Project</a>` : '');
+                    hardContainer.appendChild(block);
+                });
+            } else {
+                hardContainer.innerHTML = '<div class="empty-state">\n                            <div class="empty-state-icon">💻</div>\n                            <h3>Add Your First Hard Skill</h3>\n                            <p>Showcase your technical abilities with project links</p>\n                            <button class="btn-primary" onclick="openSkillModal(\'hard\')">Add Hard Skill</button>\n                        </div>';
+            }
+
+            if (Array.isArray(skillsJson.soft) && skillsJson.soft.length) {
+                skillsJson.soft.forEach(s => {
+                    const block = document.createElement('div');
+                    block.className = 'skill-item';
+                    block.innerHTML = `<div class="skill-name">${s.name}</div><div class="skill-description">${s.description}</div>`;
+                    softContainer.appendChild(block);
+                });
+            } else {
+                softContainer.innerHTML = '<div class="empty-state">\n                            <div class="empty-state-icon">🌟</div>\n                            <h3>Add Your First Soft Skill</h3>\n                            <p>Highlight your interpersonal and leadership abilities</p>\n                            <button class="btn-primary" onclick="openSkillModal(\'soft\')">Add Soft Skill</button>\n                        </div>';
+            }
+        }
+
+        // End of script
+    </script>
+</body>
+
+</html>
