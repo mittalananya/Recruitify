@@ -341,23 +341,32 @@
             }
         });
 
-        document.getElementById('recruiterForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+       document.getElementById('recruiterForm').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-            const formData = {
-                companyName: document.getElementById('companyName').value,
-                gst: document.getElementById('gst').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                website: document.getElementById('website').value,
-                industry: document.getElementById('industry').value,
-                address: document.getElementById('address').value,
-                about: document.getElementById('about').value
-            };
+    const formData = {
+        companyName: document.getElementById('companyName').value,
+        gst: document.getElementById('gst').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        website: document.getElementById('website').value,
+        industry: document.getElementById('industry').value,
+        address: document.getElementById('address').value,
+        about: document.getElementById('about').value
+    };
 
-            console.log('Recruiter Profile Data:', formData);
-            alert('Recruiter profile created successfully!');
-        });
+    console.log('Recruiter Profile Data:', formData);
+
+    // Optional: Call your API to save recruiter profile here
+    // Example:
+    // fetch('/api/recruiterProfile', { method: 'POST', headers: {...}, body: JSON.stringify(formData) })
+
+    alert('Recruiter profile created successfully!');
+
+    // Redirect to recruiter dashboard
+    window.location.href = 'recruiterdashboard.html';
+});
+
     </script>
 </body>
 </html>
