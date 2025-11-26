@@ -530,16 +530,85 @@
         loginToggle.addEventListener('click', switchToLogin);
         signupToggle.addEventListener('click', switchToSignup);
 
-        // Form submissions
-        loginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            console.log('Login form submitted');
-            // Add your login logic here
+       // Student Login
+loginForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    
+    const rollNumber = e.target.querySelector('input[placeholder="Roll Number"]').value;
+    const password = e.target.querySelector('input[placeholder="Password"]').value;
+
+    try {
+        const response = await fetch('http://localhost:5000/api/student/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                roll_number: rollNumber,
+                password: password
+            })
         });
 
-     signupForm.addEventListener('submit', function (e) {
-    e.preventDefault(); // Prevent default form submission
+        const data = await response.json();
 
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('studentId', data.student.id);
+            localStorage.setItem('studentName', data.student.full_name);
+            
+            alert('Login successful!');
+            window.location.href = 'studentdashboard.html';
+        } else {
+            alert(data.error || 'Login failed');
+        }
+    } catch (error) {
+        alert('Connection error. Make sure backend is running!');
+        console.error(error);
+    }
+});
+
+     // Student Signup
+signupForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    
+    const rollNumber = e.target.querySelector('input[placeholder="Roll Number (Unique ID)"]').value;
+    const fullName = e.target.querySelector('input[placeholder="Full Name"]').value;
+    const email = e.target.querySelector('input[placeholder="Email Address"]').value;
+    const password = e.target.querySelector('input[placeholder="Create Password"]').value;
+    const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
+
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:5000/api/student/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                roll_number: rollNumber,
+                full_name: fullName,
+                email: email,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Signup successful! Please login.');
+            switchToLogin();
+        } else {
+            alert(data.error || 'Signup failed');
+        }
+    } catch (error) {
+        alert('Connection error. Make sure backend is running!');
+        console.error(error);
+    }
+});
     const password = e.target.querySelector('input[placeholder="Create Password"]').value;
     const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
 
