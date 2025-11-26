@@ -597,17 +597,14 @@ if (signupForm) {
 
       const result = await response.json();
 
-      if(result.success) {
+     // if(result.success) {
         // Redirect to recruiter profile page after signup
         window.location.href = 'recruiterprofile.html';
-      } else {
+    //  } else {
         alert(result.message || 'Signup failed.');
-      }
+     // }
 
-    } catch(err) {
-      console.error('Signup error:', err);
-      alert('Something went wrong. Please try again later.');
-    }
+    } 
   });
 }
 
