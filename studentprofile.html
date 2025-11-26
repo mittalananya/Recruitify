@@ -600,39 +600,41 @@
             button.parentElement.remove();
         }
 
-        document.getElementById('profileForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+       document.getElementById('profileForm').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-            const formData = {
-                rollNumber: document.getElementById('rollNumber').value,
-                fullName: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                dob: document.getElementById('dob').value,
-                address: document.getElementById('address').value,
-                college: document.getElementById('college').value,
-                branch: document.getElementById('branch').value,
-                cgpa: document.getElementById('cgpa').value,
-                yearOfStudy: document.getElementById('yearOfStudy').value,
-                tagline: document.getElementById('tagline').value,
-                linkedin: document.getElementById('linkedin').value,
-                github: document.getElementById('github').value
-            };
+    const formData = {
+        rollNumber: document.getElementById('rollNumber').value,
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        dob: document.getElementById('dob').value,
+        address: document.getElementById('address').value,
+        college: document.getElementById('college').value,
+        branch: document.getElementById('branch').value,
+        cgpa: document.getElementById('cgpa').value,
+        yearOfStudy: document.getElementById('yearOfStudy').value,
+        tagline: document.getElementById('tagline').value,
+        linkedin: document.getElementById('linkedin').value,
+        github: document.getElementById('github').value
+    };
 
-            const sgpaInputs = document.querySelectorAll('#semesterContainer .semester-item input[type="number"]');
-            formData.sgpa = [];
-            sgpaInputs.forEach((input, index) => {
-                if (input.value) {
-                    formData.sgpa.push({
-                        semester: index + 1,
-                        sgpa: parseFloat(input.value)
-                    });
-                }
+    const sgpaInputs = document.querySelectorAll('#semesterContainer .semester-item input[type="number"]');
+    formData.sgpa = [];
+    sgpaInputs.forEach((input, index) => {
+        if (input.value) {
+            formData.sgpa.push({
+                semester: index + 1,
+                sgpa: parseFloat(input.value)
             });
+        }
+    });
 
-            console.log('Profile data:', formData);
-            alert('Profile created successfully! Welcome to Recruitify.');
-        });
+    console.log('Profile data:', formData);
+
+    // Redirect to student dashboard
+    window.location.href = "studentdashboard.html";
+});
 
         addSemester();
         addSemester();
