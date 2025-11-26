@@ -454,55 +454,74 @@
         <h2 class="title" id="authTitle">RECRUITER LOGIN</h2>
 
         <!-- Login Form -->
-        <form class="auth-form active" id="loginForm">
-            <div class="form-group">
-                <input type="email" class="form-input" placeholder="Email Address" required>
-            </div>
+       
+          app.post('/api/recruiter/login', (req, res) => {
+    const { email, password } = req.body;
 
-            <div class="form-group">
-                <input type="password" class="form-input" placeholder="Password" required>
-            </div>
+    const query = 'SELECT * FROM recruiters WHERE email = ?';
+    
+    db.query(query, [email], async (err, results) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: 'Login failed' });
+        }
 
-            <button type="submit" class="auth-btn">Login</button>
+        if (results.length === 0) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
 
-            <div class="forgot-password">
-                <a href="#">Forgot password?</a>
-            </div>
+        const recruiter = results[0];
+        const isPasswordValid = await bcrypt.compare(password, recruiter.password);
 
-            <div class="switch-link">
-                Need to register your company? <a href="#" onclick="switchToSignup()">Signup</a>
-            </div>
-        </form>
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign(
+            { id: recruiter.id, email: recruiter.email, type: 'recruiter' },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+        res.json({
+            success: true,
+            message: 'Login successful',
+            token,
+            recruiter: {
+                id: recruiter.id,
+                company_name: recruiter.company_name,
+                email: recruiter.email
+            }
+        });
+    });
+});
 
         <!-- Signup Form -->
-        <form class="auth-form" id="signupForm">
-            <div class="form-group">
-                <input type="text" class="form-input" placeholder="Company Name" required>
-            </div>
+        
+           app.post('/api/recruiter/signup', async (req, res) => {
+    const { companyName, gstNumber, email, password } = req.body;
 
-            <div class="form-group">
-                <input type="text" class="form-input" placeholder="GST Number" required>
-            </div>
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-            <div class="form-group">
-                <input type="email" class="form-input" placeholder="Official Email Address" required>
-            </div>
-
-            <div class="form-group">
-                <input type="password" class="form-input" placeholder="Create Password" required>
-            </div>
-
-            <div class="form-group">
-                <input type="password" class="form-input" placeholder="Confirm Password" required>
-            </div>
-
-            <button type="submit" class="auth-btn">Create Account</button>
-
-            <div class="switch-link">
-                Already have an account? <a href="#" onclick="switchToLogin()">Login</a>
-            </div>
-        </form>
-    </div>
+        const query = 'INSERT INTO recruiters (company_name, gst_number, email, password) VALUES (?, ?, ?, ?)';
+        
+        db.query(query, [companyName, gstNumber, email, hashedPassword], (err, result) => {
+            if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ success: false, message: 'Email or GST number already exists' });
+                }
+                return res.status(500).json({ success: false, message: 'Signup failed' });
+            }
+            
+            res.status(201).json({ 
+                success: true, 
+                message: 'Recruiter registered successfully', 
+                recruiterId: result.insertId 
+            });
+            });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
 
   <script>
 (function(){
@@ -548,7 +567,7 @@ if (loginForm) {
     const password = this.querySelector('input[type="password"]').value.trim();
 
     try {
-      const response = await fetch('/api/login', {
+     const response = await fetch('http://localhost:3000/api/recruiter/login',  {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -557,11 +576,14 @@ if (loginForm) {
       const result = await response.json();
 
       if(result.success) {
-        if(result.token) localStorage.setItem('token', result.token);
+  localStorage.setItem('recruiterToken', result.token);
+  localStorage.setItem('recruiterId', result.recruiter.id);
+  localStorage.setItem('recruiterName', result.recruiter.company_name);
 
-        // Redirect to recruiter dashboard
-        window.location.href = 'recruiterdashboard.html';
-      } else {
+  alert('Login successful!');
+  // Redirect to recruiter dashboard
+  window.location.href = 'recruiterdashboard.html';
+} else {
         alert(result.message || 'Invalid email or password');
       }
 
@@ -589,7 +611,7 @@ if (signupForm) {
     }
 
     try {
-      const response = await fetch('/api/signup', {
+      const response = await fetch('http://localhost:3000/api/recruiter/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyName, gstNumber, email, password })
@@ -599,9 +621,11 @@ if (signupForm) {
 
      
       if(result.success) {
-        // Redirect to recruiter profile page after signup
-        window.location.href = 'recruiterprofile.html';
-      } else {
+  localStorage.setItem('recruiterId', result.recruiterId);
+  alert('Signup successful! Please complete your profile.');
+  // Redirect to recruiter profile page after signup
+  window.location.href = 'recruiterprofile.html';
+}else {
         alert(result.message || 'Signup failed.');
       }
 
