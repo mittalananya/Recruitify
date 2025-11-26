@@ -603,20 +603,7 @@ signupForm.addEventListener('submit', async function (e) {
         console.error(error);
     }
 });
-    const password = e.target.querySelector('input[placeholder="Create Password"]').value;
-    const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
-
-    if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-    }
-         else{
-              window.location.href = "studentdashboard.html";
-         }
-
-    // ✅ Redirect to studentprofile.html after successful signup
-    window.location.href = "studentprofile.html";
-});
+  
 
 
         // Add some interactive effects
