@@ -268,7 +268,7 @@
           <button class="tab-btn" data-target="add-vacancy" role="tab">Add Vacancy</button>
           <button class="tab-btn" data-target="applicants" role="tab">View Applicants</button>
           <button class="tab-btn" data-target="shortlists" role="tab">Shortlists</button>
-          <button class="tab-btn" data-target="messages" role="tab">Messages</button>
+          
           <button class="tab-btn" data-target="company-profile" role="tab">Company Profile</button>
           <button class="tab-btn" data-target="settings" role="tab">Settings</button>
           <button class="tab-btn" data-target="logout" role="tab">Logout</button>
@@ -390,12 +390,12 @@
             </div>
 
             <div style="margin-top:12px;">
-              <label for="vacHardSkills">Required Hard Skills (comma separated)</label>
+              <label for="vacHardSkills">Required Hard Skills </label>
               <input id="vacHardSkills" name="hardSkills" type="text" placeholder="React, Node.js, MongoDB">
             </div>
 
             <div style="margin-top:12px;">
-              <label for="vacSoftSkills">Required Soft Skills (comma separated)</label>
+              <label for="vacSoftSkills">Required Soft Skills </label>
               <input id="vacSoftSkills" name="softSkills" type="text" placeholder="Communication, Teamwork">
             </div>
 
@@ -473,37 +473,7 @@
         </div>
       </div>
 
-      <!-- TAB: MESSAGES -->
-      <div id="messages" class="tab-content" role="region" aria-labelledby="Messages">
-        <div class="panel">
-          <h3>Messages</h3>
-
-          <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;">
-            <!-- message list -->
-            <div style="padding:8px;">
-              <div id="messageList" style="display:flex;flex-direction:column;gap:10px;">
-                <div class="placeholder">Message threads will appear here.</div>
-              </div>
-            </div>
-
-            <!-- conversation area -->
-            <div style="padding:8px;">
-              <div id="messageThread" style="min-height:220px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card-bg);">
-                <div class="placeholder">Select a conversation to view messages.</div>
-              </div>
-
-              <div style="margin-top:12px;display:flex;gap:8px;">
-                <input id="msgTo" type="email" placeholder="To (email)" style="flex:1;">
-                <button class="btn-primary" id="btnSendMsg">Send</button>
-              </div>
-
-              <div style="margin-top:8px;">
-                <textarea id="msgBody" placeholder="Write a message..." style="width:100%;"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       <!-- TAB: COMPANY PROFILE -->
       <div id="company-profile" class="tab-content" role="region" aria-labelledby="Company Profile">
@@ -662,7 +632,7 @@
               if(showId === 'add-vacancy' && typeof focusVacancy === 'function') focusVacancy();
               if(showId === 'applicants' && typeof loadApplicants === 'function') loadApplicants();
               if(showId === 'shortlists' && typeof loadShortlists === 'function') loadShortlists();
-              if(showId === 'messages' && typeof loadMessages === 'function') loadMessages();
+            
               if(showId === 'company-profile' && typeof loadCompanyProfile === 'function') loadCompanyProfile();
               if(showId === 'settings' && typeof loadSettings === 'function') loadSettings();
               if(showId === 'logout' && typeof doLogout === 'function') doLogout();
@@ -738,9 +708,7 @@
     async function loadShortlists(){
       // fetch public & private shortlist
     }
-    async function loadMessages(){
-      // fetch messages/conversations
-    }
+   
     async function loadCompanyProfile(){
       // fetch company profile and populate inputs (companyName, companyGST, etc)
     }
@@ -783,12 +751,7 @@
       document.getElementById('greetingHi').textContent = payload.name ? ('Hello, ' + payload.name.split(' ')[0]) : 'Hello,';
     });
 
-    document.getElementById('btnSendMsg').addEventListener('click', async function(){
-      const to = document.getElementById('msgTo').value.trim();
-      const body = document.getElementById('msgBody').value.trim();
-      if(!to) { alert('Please provide recipient email'); return; }
-      // TODO: POST message to backend
-    });
+   
 
     document.getElementById('btnSaveSettings').addEventListener('click', async function(){
       const settings = {
