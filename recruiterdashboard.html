@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recruitify — Recruiter Dashboard</title>
+
+  <!-- Montserrat font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===================== THEME VARIABLES ===================== */
+    :root{
+      --bg: #fbfaf9;
+      --card-bg: #ffffff;
+      --muted: #6f6f6f;
+      --brand-dark: #0f3a34;
+      --line: #f0e0db;
+      --accent1: #d9b1a8; /* dusty-peach */
+      --accent2: #b48a83; /* deeper dusty */
+      --beige: #efe1dd;
+      --shadow-lg: 0 20px 45px rgba(12,18,18,0.06);
+      --shadow-sm: 0 10px 24px rgba(12,18,18,0.04);
+      --radius-xl: 24px;
+      --radius-lg: 14px;
+      --max-w: 1250px;
+    }
+
+    /* ===================== GLOBAL ===================== */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Montserrat",system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:var(--bg);
+      color:#243434;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+      padding:22px;
+    }
+    .container{max-width:var(--max-w);margin:0 auto;}
+
+    /* ===================== TOP HEADER (ROW 1) ===================== */
+    .top-row{
+      background:var(--card-bg);
+      border-radius:12px;
+      padding:18px 28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .brand .logo {
+      width:52px;height:52px;border-radius:12px;
+      background: linear-gradient(135deg,var(--accent1),var(--accent2));
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:800;
+      font-size:20px; box-shadow:0 10px 30px rgba(180,138,131,0.12);
+    }
+    .brand .titles{display:flex;flex-direction:column}
+    .brand .title{font-size:22px;font-weight:800;color:var(--brand-dark);letter-spacing:1px}
+    .brand .subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+
+    .header-right{display:flex;align-items:center;gap:12px}
+    .greeting{ text-align:right; }
+    .greeting .hi{font-weight:700;color:var(--brand-dark)}
+    .greeting .sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .profile-circle{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800}
+
+    /* ===================== NAV (ROW 2) - Two-line feel ===================== */
+    .nav-row{
+      margin-top:18px;
+      background:var(--card-bg);
+      border-radius:12px;
+      padding:10px 22px;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+    }
+
+    /* Tabs area: centered and distributed with two visual lines */
+    .tabs-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    /* First line (could be used for primary groups if needed). We'll use full tabset in second row visually */
+    .tabs-top{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      opacity:0; /* hidden in this layout but kept for parity with screenshot two-rows */
+    }
+
+    .tabs-bottom{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .tab-btn{
+      background:transparent;
+      border:none;
+      padding:10px 16px;
+      font-weight:600;
+      color:var(--brand-dark);
+      border-radius:12px;
+      cursor:pointer;
+      transition:all .16s ease;
+      min-width:120px;
+      text-align:center;
+    }
+    .tab-btn:hover{transform:translateY(-3px); color:var(--accent2)}
+    .tab-btn.active{
+      background: linear-gradient(180deg, rgba(217,177,168,0.11), rgba(180,138,131,0.06));
+      box-shadow:none;
+      color:var(--accent2);
+    }
+
+    /* ===================== MAIN AREA ===================== */
+    .main-area{ margin-top:28px; padding-bottom:60px; }
+
+    /* Dashboard overview (contains former sidebar items) */
+    .dashboard-overview{ display:block; } /* default shown */
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:20px;
+    }
+    .stat-card{
+      background:var(--card-bg);
+      padding:24px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+      text-align:center;
+    }
+    .stat-card .title{ color:var(--muted); font-weight:600; font-size:13px }
+    .stat-card .value{ margin-top:10px; font-size:22px; font-weight:800; color:var(--brand-dark) }
+
+    .dashboard-area{
+      margin-top:22px;
+      display:grid;
+      grid-template-columns:1fr 360px;
+      gap:22px;
+      align-items:start;
+    }
+
+    /* left column blocks (overview + lists) */
+    .panel{
+      background:var(--card-bg);
+      padding:22px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+    }
+
+    .panel h3{ margin:0 0 12px 0; font-size:18px; color:var(--brand-dark); font-weight:800 }
+    .placeholder{ padding:18px; border-radius:12px; background:var(--beige); color:var(--muted); text-align:center; }
+
+    /* vacancy card grid */
+    .vac-list{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+      gap:14px;
+      margin-top:12px;
+    }
+    .vac-card{
+      padding:14px;border-radius:14px;background:var(--card-bg);border:1px solid var(--line);box-shadow:var(--shadow-sm);
+    }
+    .vac-card h4{ margin:0;font-size:15px; color:var(--brand-dark) }
+    .vac-card p{ margin:8px 0 0;color:var(--muted); font-size:13px }
+
+    /* applicant list */
+    .app-list{ display:flex; flex-direction:column; gap:12px; margin-top:12px; }
+    .app-item{ display:flex; gap:12px; align-items:center; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--card-bg); }
+    .app-item .avatar{ width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; }
+    .app-item .meta{ font-weight:700; }
+    .app-item .sub{ font-size:12px; color:var(--muted) }
+
+    /* right column (moved sidebar contents into main dashboard right column) */
+    .right-quick{
+      display:flex; flex-direction:column; gap:14px;
+      position:relative;
+    }
+    .mini{
+      padding:14px; border-radius:14px; background:var(--card-bg); border:1px solid var(--line); box-shadow:var(--shadow-sm);
+    }
+    .mini h4{ margin:0; font-size:13px; color:var(--muted) }
+    .mini p{ margin-top:8px; font-weight:800 }
+
+    /* ===================== TAB CONTENT AREAS ===================== */
+    .tab-content{ display:none; }
+    .tab-content.active{ display:block; animation:fadeIn .18s ease; }
+
+    @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+
+    /* forms & inputs */
+    label{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight:600 }
+    input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:transparent; font-size:14px;
+    }
+    textarea{ min-height:100px; resize:vertical }
+
+    .form-row{ display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
+    .full{ grid-column:1 / -1; }
+
+    .btn-primary{
+      padding:10px 14px; border-radius:999px; border:none; font-weight:800; cursor:pointer;
+      background: linear-gradient(135deg,var(--accent2),var(--accent1)); color:white;
+    }
+
+    /* responsive */
+    @media (max-width:1100px){
+      .dashboard-area{ grid-template-columns: 1fr; }
+      .grid-4{ grid-template-columns: repeat(2,1fr) }
+      .form-row{ grid-template-columns:1fr }
+    }
+    @media (max-width:520px){
+      .grid-4{ grid-template-columns:1fr 1fr }
+      .tabs-wrap{ gap:6px }
+      .tab-btn{ min-width:90px; padding:8px 10px; font-size:13px }
+      .brand .title{ font-size:18px }
+      .brand .logo{ width:44px; height:44px }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- TOP HEADER ROW -->
+    <div class="top-row" role="banner">
+      <div class="brand" aria-hidden="false">
+        <div class="logo" id="brandLogo">R</div>
+        <div class="titles">
+          <div class="title">RECRUITIFY</div>
+          <div class="subtitle">Beyond Resumes</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="greeting" aria-live="polite">
+          <div class="hi" id="greetingHi">Hello,</div>
+          <div class="sub" id="greetingSub">Ready to recruit?</div>
+        </div>
+        <div class="profile-circle" aria-hidden="true">?</div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION ROW (two-line feel) -->
+    <div class="nav-row" role="navigation" aria-label="Primary navigation">
+      <div class="tabs-wrap">
+        <div class="tabs-top" aria-hidden="true">
+          <!-- reserved for two-line effect; hidden in CSS but kept for structure -->
+        </div>
+
+        <div class="tabs-bottom" role="tablist" aria-label="Main tabs">
+          <!-- All tabs included -->
+          <button class="tab-btn active" data-target="dashboard" role="tab" aria-selected="true">Dashboard</button>
+          <button class="tab-btn" data-target="add-vacancy" role="tab">Add Vacancy</button>
+          <button class="tab-btn" data-target="applicants" role="tab">View Applicants</button>
+          <button class="tab-btn" data-target="shortlists" role="tab">Shortlists</button>
+          <button class="tab-btn" data-target="messages" role="tab">Messages</button>
+          <button class="tab-btn" data-target="company-profile" role="tab">Company Profile</button>
+          <button class="tab-btn" data-target="settings" role="tab">Settings</button>
+          <button class="tab-btn" data-target="logout" role="tab">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="main-area">
+
+      <!-- DASHBOARD OVERVIEW (default visible) -->
+      <div id="dashboard" class="dashboard-overview" aria-live="polite">
+        <h3>Dashboard Overview</h3>
+
+        <!-- top 4 stats -->
+        <div class="grid-4" style="margin-top:14px;">
+          <div class="stat-card">
+            <div class="title">Vacancies Posted</div>
+            <div class="value" id="statVac">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="title">Applicants Received</div>
+            <div class="value" id="statApps">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="title">Shortlisted Candidates</div>
+            <div class="value" id="statShort">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="title">Matches Found</div>
+            <div class="value" id="statMatch">—</div>
+          </div>
+        </div>
+
+        <!-- main dashboard area: left details, right quick boxes (these used to be sidebar) -->
+        <div class="dashboard-area" style="margin-top:20px;">
+          <!-- LEFT: Vacancies & Applicants -->
+          <div>
+            <!-- Vacancies panel (empty list container for backend) -->
+            <div class="panel" id="overviewVacancies">
+              <h3>Open Vacancies</h3>
+              <div id="vacanciesList" class="vac-list" aria-live="polite">
+                <!-- backend should render vacancy cards here -->
+                <div class="placeholder">Vacancies will be shown here when your backend provides data.</div>
+              </div>
+            </div>
+
+            <!-- Recent applicants -->
+            <div class="panel" id="overviewApplicants" style="margin-top:18px;">
+              <h3>Recent Applicants</h3>
+              <div id="recentApplicants" class="app-list" aria-live="polite">
+                <!-- backend should render applicants here -->
+                <div class="placeholder">Recent applicants will be shown here when your backend provides data.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: moved sidebar content -->
+          <div class="right-quick">
+            <div class="mini" id="quickStatsBox">
+              <h4>Quick Stats</h4>
+              <p id="quickVac">Vacancies: —</p>
+              <p id="quickApps">Applicants: —</p>
+            </div>
+
+            <div class="mini" id="topSkillsBox">
+              <h4>Top Skills Searched</h4>
+              <div id="topSkills" style="margin-top:8px">
+                <!-- backend: list of skills; placeholder below -->
+                <div class="placeholder">Top skills will appear here when your backend provides data.</div>
+              </div>
+            </div>
+
+            <div class="mini" id="shortlistBox">
+              <h4>Shortlist Snapshot</h4>
+              <p id="shortSnapshot">— candidates</p>
+            </div>
+
+            <div class="mini" id="helpBox">
+              <h4>Need help?</h4>
+              <p style="margin-top:8px;color:var(--muted)">Check integration docs or contact platform admin.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ADD VACANCY (fields restored) -->
+      <div id="add-vacancy" class="tab-content" role="region" aria-labelledby="Add Vacancy">
+        <div class="panel">
+          <h3>Add Vacancy</h3>
+
+          <!-- Vacancy form -->
+          <form id="formAddVacancy" onsubmit="return false" aria-label="Add Vacancy Form">
+            <div class="form-row" style="margin-top:10px;">
+              <div>
+                <label for="vacTitle">Job Title *</label>
+                <input id="vacTitle" name="title" type="text" placeholder="Frontend Developer">
+              </div>
+              <div>
+                <label for="vacLocation">Work Location</label>
+                <input id="vacLocation" name="location" type="text" placeholder="City / Remote">
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top:12px;">
+              <div>
+                <label for="vacExperience">Experience</label>
+                <input id="vacExperience" name="experience" type="text" placeholder="e.g., 0-2 years">
+              </div>
+              <div>
+                <label for="vacOpenings">Number of Openings</label>
+                <input id="vacOpenings" name="openings" type="text" placeholder="e.g., 2">
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <label for="vacSalary">Salary Range</label>
+              <input id="vacSalary" name="salary" type="text" placeholder="e.g., 20,000 - 30,000 INR">
+            </div>
+
+            <div style="margin-top:12px;">
+              <label for="vacHardSkills">Required Hard Skills (comma separated)</label>
+              <input id="vacHardSkills" name="hardSkills" type="text" placeholder="React, Node.js, MongoDB">
+            </div>
+
+            <div style="margin-top:12px;">
+              <label for="vacSoftSkills">Required Soft Skills (comma separated)</label>
+              <input id="vacSoftSkills" name="softSkills" type="text" placeholder="Communication, Teamwork">
+            </div>
+
+            <div style="margin-top:12px;">
+              <label for="vacDesc">Job Description</label>
+              <textarea id="vacDesc" name="description" placeholder="Short job description"></textarea>
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
+              <div style="flex:1">
+                <label for="vacApplyBy">Last Date to Apply</label>
+                <input id="vacApplyBy" name="applyBy" type="text" placeholder="YYYY-MM-DD">
+              </div>
+              <div style="width:220px;">
+                <label for="vacFormUpload">Attach JD / File (optional)</label>
+                <input id="vacFormUpload" type="file" accept=".pdf,.doc,.docx">
+              </div>
+            </div>
+
+            <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px;">
+              <button class="btn-primary" id="btnPostVac">Post Vacancy</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- TAB: APPLICANTS (fields restored) -->
+      <div id="applicants" class="tab-content" role="region" aria-labelledby="Applicants">
+        <div class="panel">
+          <h3>Applicants</h3>
+
+          <!-- filters -->
+          <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
+            <input id="appSearch" type="text" placeholder="Search by name, skill, email..." style="flex:1;">
+            <select id="appFilterVac">
+              <option value="">All vacancies</option>
+              <!-- backend should populate vacancy options -->
+            </select>
+            <select id="appFilterStatus">
+              <option value="">All status</option>
+              <option value="new">New</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <!-- applicant list -->
+          <div id="applicantsList" class="app-list" style="margin-top:14px;">
+            <!-- backend should render applicant rows here -->
+            <div class="placeholder">Applicants will be shown here when your backend provides data.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SHORTLISTS -->
+      <div id="shortlists" class="tab-content" role="region" aria-labelledby="Shortlists">
+        <div class="panel">
+          <h3>Shortlists</h3>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="panel" style="padding:14px;">
+              <h4 style="margin:0 0 10px 0;">Public Shortlist</h4>
+              <div id="publicShortList">
+                <div class="placeholder">Public shortlisted candidates will appear here.</div>
+              </div>
+            </div>
+
+            <div class="panel" style="padding:14px;">
+              <h4 style="margin:0 0 10px 0;">Private Shortlist</h4>
+              <div id="privateShortList">
+                <div class="placeholder">Private shortlisted candidates will appear here.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MESSAGES -->
+      <div id="messages" class="tab-content" role="region" aria-labelledby="Messages">
+        <div class="panel">
+          <h3>Messages</h3>
+
+          <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;">
+            <!-- message list -->
+            <div style="padding:8px;">
+              <div id="messageList" style="display:flex;flex-direction:column;gap:10px;">
+                <div class="placeholder">Message threads will appear here.</div>
+              </div>
+            </div>
+
+            <!-- conversation area -->
+            <div style="padding:8px;">
+              <div id="messageThread" style="min-height:220px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card-bg);">
+                <div class="placeholder">Select a conversation to view messages.</div>
+              </div>
+
+              <div style="margin-top:12px;display:flex;gap:8px;">
+                <input id="msgTo" type="email" placeholder="To (email)" style="flex:1;">
+                <button class="btn-primary" id="btnSendMsg">Send</button>
+              </div>
+
+              <div style="margin-top:8px;">
+                <textarea id="msgBody" placeholder="Write a message..." style="width:100%;"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: COMPANY PROFILE -->
+      <div id="company-profile" class="tab-content" role="region" aria-labelledby="Company Profile">
+        <div class="panel">
+          <h3>Company Profile</h3>
+
+          <div style="display:grid;grid-template-columns:140px 1fr;gap:14px;align-items:start;">
+            <div>
+              <div id="companyLogo" style="width:120px;height:120px;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:28px;">R</div>
+              <div style="margin-top:8px;">
+                <label for="companyLogoUpload">Upload Logo</label>
+                <input id="companyLogoUpload" type="file" accept="image/*">
+              </div>
+            </div>
+
+            <div>
+              <div class="form-row">
+                <div>
+                  <label for="companyName">Company Name</label>
+                  <input id="companyName" type="text" placeholder="Company Name">
+                </div>
+                <div>
+                  <label for="companyGST">GST Number</label>
+                  <input id="companyGST" type="text" placeholder="GSTIN">
+                </div>
+              </div>
+
+              <div style="margin-top:12px;" class="form-row">
+                <div>
+                  <label for="companyEmail">Email</label>
+                  <input id="companyEmail" type="email" placeholder="recruit@company.com">
+                </div>
+                <div>
+                  <label for="companyPhone">Phone</label>
+                  <input id="companyPhone" type="tel" placeholder="+91 9xxxxxxxx">
+                </div>
+              </div>
+
+              <div style="margin-top:12px;" class="form-row">
+                <div>
+                  <label for="companyWebsite">Website</label>
+                  <input id="companyWebsite" type="text" placeholder="https://example.com">
+                </div>
+                <div>
+                  <label for="companyIndustry">Industry Type</label>
+                  <select id="companyIndustry">
+                    <option value="">Select Industry</option>
+                    <option>Information Technology</option>
+                    <option>Education</option>
+                    <option>Healthcare</option>
+                    <option>Finance</option>
+                    <option>Manufacturing</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top:12px;">
+                <label for="companyDesc">Company Description</label>
+                <textarea id="companyDesc" placeholder="Short company description"></textarea>
+              </div>
+
+              <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:10px;">
+                <button class="btn-primary" id="btnSaveCompany">Save Profile</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SETTINGS -->
+      <div id="settings" class="tab-content" role="region" aria-labelledby="Settings">
+        <div class="panel">
+          <h3>Settings</h3>
+
+          <div style="display:grid;gap:12px;">
+            <div>
+              <label for="settingEmail">Notification Email</label>
+              <input id="settingEmail" type="email" placeholder="you@company.com">
+            </div>
+
+            <div style="display:flex;gap:12px;">
+              <div style="flex:1">
+                <label for="settingPassword">Change Password</label>
+                <input id="settingPassword" type="password" placeholder="New Password">
+              </div>
+              <div style="flex:1">
+                <label for="settingPasswordConfirm">Confirm Password</label>
+                <input id="settingPasswordConfirm" type="password" placeholder="Confirm Password">
+              </div>
+            </div>
+
+            <div>
+              <label for="settingNotifications">Notification Settings</label>
+              <select id="settingNotifications">
+                <option value="">Select</option>
+                <option>Email & SMS</option>
+                <option>Email only</option>
+                <option>None</option>
+              </select>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <div>
+                <label style="font-weight:700;color:var(--muted)">Danger Zone</label>
+                <div style="font-size:12px;color:var(--muted)">Delete account or remove organization</div>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <button id="btnDeleteAccount" style="background:#fff;border:1px solid #f4c6be;padding:8px 12px;border-radius:10px;color:#c25b50;font-weight:700">Delete Account</button>
+                <button id="btnSaveSettings" class="btn-primary">Save Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: LOGOUT -->
+      <div id="logout" class="tab-content" role="region" aria-labelledby="Logout">
+        <div class="panel">
+          <h3>Logout</h3>
+          <div class="placeholder">Use your backend logout endpoint to end the session. (No action implemented client-side.)</div>
+        </div>
+      </div>
+
+    </div><!-- end main-area -->
+
+  </div><!-- end container -->
+
+  <!-- ===================== JAVASCRIPT: Tab logic + hooks (no mock data) ===================== -->
+  <script>
+    /* ---------- Tab switching logic ---------- */
+    (function(){
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      const tabsMap = {};
+      tabButtons.forEach(btn=>{
+        const target = btn.getAttribute('data-target');
+        tabsMap[target] = btn;
+        btn.addEventListener('click', (e)=>{
+          // deactivate all
+          document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+          document.querySelectorAll('.tab-content, .dashboard-overview').forEach(s=> s.style.display = 'none');
+
+          // activate clicked
+          btn.classList.add('active');
+
+          // Show either dashboard (special) or a tab-content
+          const showId = target;
+          if(showId === 'dashboard'){
+            document.getElementById('dashboard').style.display = 'block';
+            // loader hook for dashboard (implement to fetch backend)
+            if(typeof loadDashboard === 'function') loadDashboard();
+          } else {
+            const content = document.getElementById(showId);
+            if(content){
+              content.style.display = 'block';
+              // loader hooks
+              if(showId === 'add-vacancy' && typeof focusVacancy === 'function') focusVacancy();
+              if(showId === 'applicants' && typeof loadApplicants === 'function') loadApplicants();
+              if(showId === 'shortlists' && typeof loadShortlists === 'function') loadShortlists();
+              if(showId === 'messages' && typeof loadMessages === 'function') loadMessages();
+              if(showId === 'company-profile' && typeof loadCompanyProfile === 'function') loadCompanyProfile();
+              if(showId === 'settings' && typeof loadSettings === 'function') loadSettings();
+              if(showId === 'logout' && typeof doLogout === 'function') doLogout();
+            }
+          }
+          // update aria-selected attributes
+          document.querySelectorAll('.tab-btn').forEach(b => b.setAttribute('aria-selected', b.classList.contains('active') ? 'true' : 'false'));
+        });
+      });
+    })();
+
+    /* ---------- Helper: set empty placeholder containers ---------- */
+    function setEmpty(container, text='No data available'){
+      if(!container) return;
+      container.innerHTML = '<div class="placeholder">' + text + '</div>';
+    }
+
+    /* ---------- Loader hooks (implement these to call your backend) ---------- */
+    // These are intentionally empty / commented; please replace with your backend calls.
+    async function loadDashboard(){
+      // Example:
+      // const res = await fetch('/api/dashboard/summary'); const data = await res.json();
+      // document.getElementById('statVac').textContent = data.vacanciesCount || '—';
+      // document.getElementById('statApps').textContent = data.applicantsCount || '—';
+      // document.getElementById('statShort').textContent = data.shortlistCount || '—';
+      // document.getElementById('statMatch').textContent = data.matchCount || '—';
+      // populate quick stats, top skills, vacanciesList, recentApplicants...
+      // For now, keep placeholders empty (no mock).
+      setEmpty(document.getElementById('vacanciesList'), 'Vacancies will appear here when backend provides data.');
+      setEmpty(document.getElementById('recentApplicants'), 'Recent applicants will appear here when backend provides data.');
+      setEmpty(document.getElementById('topSkills'), 'Top skills will appear here when backend provides data.');
+    }
+
+    async function loadVacancies(){
+      // fetch vacancies and call renderVacancies(vacancies)
+    }
+    function renderVacancies(vacancies){
+      // vacancies: array of objects { id, title, location, description, skills, postedAt }
+      const list = document.getElementById('vacanciesList');
+      list.innerHTML = '';
+      if(!Array.isArray(vacancies) || vacancies.length===0){ setEmpty(list,'No vacancies found.'); return; }
+      vacancies.forEach(v=>{
+        const div = document.createElement('div');
+        div.className = 'vac-card';
+        div.innerHTML = `<h4>${escapeHtml(v.title||'')}</h4><p>${escapeHtml(v.location||'')}</p><p style="margin-top:8px;color:${'var(--muted)'};font-size:13px">${escapeHtml(v.description||'')}</p>`;
+        list.appendChild(div);
+      });
+    }
+
+    async function loadApplicants(){
+      // fetch applicants and call renderApplicants(applicants)
+    }
+    function renderApplicants(applicants){
+      const box = document.getElementById('applicantsList');
+      box.innerHTML = '';
+      if(!Array.isArray(applicants) || applicants.length===0){ setEmpty(box,'No applicants found.'); return; }
+      applicants.forEach(a=>{
+        const el = document.createElement('div');
+        el.className = 'app-item';
+        el.innerHTML = `<div class="avatar">${escapeHtml((a.name||'')[0]||'')}</div>
+          <div>
+            <div class="meta">${escapeHtml(a.name||'')}</div>
+            <div class="sub">${escapeHtml(a.email||'')} • ${escapeHtml(a.appliedFor||'')}</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-weight:800;color:#2d4b48">${escapeHtml(String(a.match||'—'))}</div>
+            <div style="font-size:12px;color:var(--muted)">Match</div>
+          </div>`;
+        box.appendChild(el);
+      });
+    }
+
+    async function loadShortlists(){
+      // fetch public & private shortlist
+    }
+    async function loadMessages(){
+      // fetch messages/conversations
+    }
+    async function loadCompanyProfile(){
+      // fetch company profile and populate inputs (companyName, companyGST, etc)
+    }
+    async function loadSettings(){
+      // fetch settings
+    }
+
+    /* ---------- Action hooks (wired to buttons) ---------- */
+    document.getElementById('btnPostVac').addEventListener('click', async function(){
+      // collect vacancy form values
+      const payload = {
+        title: document.getElementById('vacTitle').value.trim(),
+        location: document.getElementById('vacLocation').value.trim(),
+        experience: document.getElementById('vacExperience').value.trim(),
+        openings: document.getElementById('vacOpenings').value.trim(),
+        salary: document.getElementById('vacSalary').value.trim(),
+        hardSkills: (document.getElementById('vacHardSkills').value||'').split(',').map(s=>s.trim()).filter(Boolean),
+        softSkills: (document.getElementById('vacSoftSkills').value||'').split(',').map(s=>s.trim()).filter(Boolean),
+        description: document.getElementById('vacDesc').value.trim(),
+        applyBy: document.getElementById('vacApplyBy').value.trim()
+      };
+      // TODO: send payload to your backend (e.g., fetch POST). No mock action here.
+      // Example:
+      // await fetch('/api/vacancies', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      // after success: call loadVacancies();
+    });
+
+    document.getElementById('btnSaveCompany').addEventListener('click', async function(){
+      const payload = {
+        name: document.getElementById('companyName').value.trim(),
+        gst: document.getElementById('companyGST').value.trim(),
+        email: document.getElementById('companyEmail').value.trim(),
+        phone: document.getElementById('companyPhone').value.trim(),
+        website: document.getElementById('companyWebsite').value.trim(),
+        industry: document.getElementById('companyIndustry').value,
+        description: document.getElementById('companyDesc').value.trim()
+      };
+      // TODO: PUT/POST to backend to save company profile
+      // After saving you may call loadCompanyProfile();
+      document.getElementById('greetingHi').textContent = payload.name ? ('Hello, ' + payload.name.split(' ')[0]) : 'Hello,';
+    });
+
+    document.getElementById('btnSendMsg').addEventListener('click', async function(){
+      const to = document.getElementById('msgTo').value.trim();
+      const body = document.getElementById('msgBody').value.trim();
+      if(!to) { alert('Please provide recipient email'); return; }
+      // TODO: POST message to backend
+    });
+
+    document.getElementById('btnSaveSettings').addEventListener('click', async function(){
+      const settings = {
+        email: document.getElementById('settingEmail').value.trim(),
+        password: document.getElementById('settingPassword').value,
+        notifications: document.getElementById('settingNotifications').value
+      };
+      // TODO: save settings via backend
+    });
+
+    document.getElementById('btnDeleteAccount').addEventListener('click', function(){
+      // TODO: confirm & call delete account endpoint
+      const ok = confirm('Are you sure you want to delete the account? This action is irreversible.');
+      if(!ok) return;
+      // TODO: call backend to delete and redirect
+    });
+
+    /* ---------- Small helpers ---------- */
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g,c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+    function focusVacancy(){ const t=document.getElementById('vacTitle'); if(t) t.focus(); }
+
+    // file upload preview for company logo
+    document.getElementById('companyLogoUpload').addEventListener('change', function(e){
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        const logo = document.getElementById('companyLogo');
+        logo.style.background = `url('${ev.target.result}') center/cover`;
+        logo.textContent = '';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ensure dashboard is shown on initial load
+    document.addEventListener('DOMContentLoaded', function(){
+      // by default dashboard is visible and tab "Dashboard" is active
+      // If you want to load data immediately, call loadDashboard() here:
+      // loadDashboard();
+    });
+
+  </script>
+</body>
+</html>
