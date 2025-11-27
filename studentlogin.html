@@ -505,144 +505,135 @@
     </div>
 
     <script>
-        const loginToggle = document.getElementById('loginToggle');
-        const signupToggle = document.getElementById('signupToggle');
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-        const authTitle = document.getElementById('authTitle');
+    const loginToggle = document.getElementById('loginToggle');
+    const signupToggle = document.getElementById('signupToggle');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const authTitle = document.getElementById('authTitle');
 
-        function switchToLogin() {
-            loginToggle.classList.add('active');
-            signupToggle.classList.remove('active');
-            loginForm.classList.add('active');
-            signupForm.classList.remove('active');
-            authTitle.textContent = 'STUDENT LOGIN';
-        }
-
-        function switchToSignup() {
-            signupToggle.classList.add('active');
-            loginToggle.classList.remove('active');
-            signupForm.classList.add('active');
-            loginForm.classList.remove('active');
-            authTitle.textContent = 'STUDENT SIGNUP';
-        }
-
-        loginToggle.addEventListener('click', switchToLogin);
-        signupToggle.addEventListener('click', switchToSignup);
-
-       // Student Login
-loginForm.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    
-    const rollNumber = e.target.querySelector('input[placeholder="Roll Number"]').value;
-    const password = e.target.querySelector('input[placeholder="Password"]').value;
-
-    try {
-        const response = await fetch('http://localhost:5000/api/student/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                roll_number: rollNumber,
-                password: password
-            })
-        });
-         const data = await response.json();
-
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('studentId', data.student.id);
-            localStorage.setItem('studentName', data.student.full_name);
-            
-            alert('Login successful!');
-            window.location.href = 'studentdashboard.html';
-        } else {
-            alert(data.error || 'Login failed');
-        }
-    } catch (error) {
-        alert('Connection error. Make sure backend is running!');
-        console.error(error);
-    }
-});
-
-
-
-// Student Signup - FIXED
-signupForm.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    
-    const rollNumber = e.target.querySelector('input[placeholder="Roll Number (Unique ID)"]').value;
-    const fullName = e.target.querySelector('input[placeholder="Full Name"]').value;
-    const email = e.target.querySelector('input[placeholder="Email Address"]').value;
-    const password = e.target.querySelector('input[placeholder="Create Password"]').value;
-    const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
-
-    // Check if passwords match
-    if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
+    function switchToLogin() {
+        loginToggle.classList.add('active');
+        signupToggle.classList.remove('active');
+        loginForm.classList.add('active');
+        signupForm.classList.remove('active');
+        authTitle.textContent = 'STUDENT LOGIN';
     }
 
-    try {
-        const response = await fetch('http://localhost:5000/api/student/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                roll_number: rollNumber,
-                full_name: fullName,
-                email: email,
-                password: password
-            })
-        });
-         const data = await response.json();
-
-        if (response.ok) {
-            alert('Signup successful! Please login.');
-            switchToLogin();
-        } else {
-            alert(data.error || 'Signup failed');
-        }
-    } catch (error) {
-        alert('Connection error. Make sure backend is running!');
-        console.error(error);
+    function switchToSignup() {
+        signupToggle.classList.add('active');
+        loginToggle.classList.remove('active');
+        signupForm.classList.add('active');
+        loginForm.classList.remove('active');
+        authTitle.textContent = 'STUDENT SIGNUP';
     }
-});
 
-        const data = await response.json();
-
-        if (response.json) {
-            alert('Signup successful! Please login.');
-            switchToLogin();
-        } else {
-            alert(data.error || 'Signup failed');
-        }
-    } catch (error) {
-        alert('Connection error. Make sure backend is running!');
-        console.error(error);
-    }
-});
-  
+    loginToggle.addEventListener('click', switchToLogin);
+    signupToggle.addEventListener('click', switchToSignup);
 
 
-        // Add some interactive effects
-        document.querySelectorAll('.form-input').forEach(input => {
-            input.addEventListener('focus', function () {
-                this.parentElement.style.transform = 'scale(1.02)';
+    /* -----------------------------
+       STUDENT LOGIN
+    ------------------------------*/
+    loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        
+        const rollNumber = e.target.querySelector('input[placeholder="Roll Number"]').value;
+        const password = e.target.querySelector('input[placeholder="Password"]').value;
+
+        try {
+            const response = await fetch('http://localhost:5000/api/student/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    roll_number: rollNumber,
+                    password: password
+                })
             });
 
-            input.addEventListener('blur', function () {
-                this.parentElement.style.transform = 'scale(1)';
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('studentId', data.student.id);
+                localStorage.setItem('studentName', data.student.full_name);
+                
+                alert('Login successful!');
+                window.location.href = 'studentdashboard.html';
+            } else {
+                alert(data.error || 'Login failed');
+            }
+        } catch (error) {
+            alert('Connection error. Make sure backend is running!');
+            console.error(error);
+        }
+    });
+
+
+
+    /* -----------------------------
+       STUDENT SIGNUP
+    ------------------------------*/
+    signupForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        
+        const rollNumber = e.target.querySelector('input[placeholder="Roll Number (Unique ID)"]').value;
+        const fullName = e.target.querySelector('input[placeholder="Full Name"]').value;
+        const email = e.target.querySelector('input[placeholder="Email Address"]').value;
+        const password = e.target.querySelector('input[placeholder="Create Password"]').value;
+        const confirmPassword = e.target.querySelector('input[placeholder="Confirm Password"]').value;
+
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            alert('Passwords do not match!');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5000/api/student/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    roll_number: rollNumber,
+                    full_name: fullName,
+                    email: email,
+                    password: password
+                })
             });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Signup successful!');
+                // ⬇ Redirect to student profile after signup
+                window.location.href = "studentprofile.html";
+            } else {
+                alert(data.error || 'Signup failed');
+            }
+        } catch (error) {
+            alert('Connection error. Make sure backend is running!');
+            console.error(error);
+        }
+    });
+
+
+    /* -----------------------------
+       SMALL UI EFFECTS
+    ------------------------------*/
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('focus', function () {
+            this.parentElement.style.transform = 'scale(1.02)';
         });
 
-        // Add floating animation to form groups
-        document.querySelectorAll('.form-group').forEach((group, index) => {
-            group.style.animationDelay = `${index * 0.1}s`;
+        input.addEventListener('blur', function () {
+            this.parentElement.style.transform = 'scale(1)';
         });
-    </script>
+    });
+</script>
+
 </body>
 
 </html>
