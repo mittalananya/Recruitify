@@ -3,7 +3,7 @@ const { Pool } = require('pg');
 
 require('dotenv').config();
 
-const connection = mysql.createConnection({
+const pool = new Pool({
     host: process.env.dpg-d4ka22vgi27c73ckdmcg-a,
     user: process.env.recruitify_db_user,
     password: process.env.kQ7b86pOTnEYCw0rr0FyFKvzEjtHK4vv,
