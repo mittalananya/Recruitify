@@ -613,7 +613,7 @@ signupForm.addEventListener('submit', async function (e) {
 
         const data = await response.json();
 
-        if (response.ok) {
+        if (response.json) {
             alert('Signup successful! Please login.');
             switchToLogin();
         } else {
