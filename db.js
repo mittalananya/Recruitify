@@ -1,12 +1,14 @@
 
-const mysql = require('mysql2');
+const { Pool } = require('pg');
+
 require('dotenv').config();
 
 const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    host: process.env.dpg-d4ka22vgi27c73ckdmcg-a,
+    user: process.env.recruitify_db_user,
+    password: process.env.kQ7b86pOTnEYCw0rr0FyFKvzEjtHK4vv,
+    database: process.env.recruitify_db,
+    port: process.env.DB_PORT || 5432
 });
 
 connection.connect((err) => {
