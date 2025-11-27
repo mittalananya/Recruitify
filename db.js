@@ -1,22 +1,19 @@
-
 const { Pool } = require('pg');
-
 require('dotenv').config();
 
+// Correct PostgreSQL pool connection
 const pool = new Pool({
-    host: process.env.dpg-d4ka22vgi27c73ckdmcg-a,
-    user: process.env.recruitify_db_user,
-    password: process.env.kQ7b86pOTnEYCw0rr0FyFKvzEjtHK4vv,
-    database: process.env.recruitify_db,
-    port: process.env.DB_PORT || 5432
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT || 5432,
+    ssl: { rejectUnauthorized: false }  // Render requires SSL
 });
 
-connection.connect((err) => {
-    if (err) {
-        console.error('❌ Database connection failed:', err);
-        return;
-    }
-    console.log('✅ Connected to MySQL Database');
-});
+// Test connection
+pool.connect()
+    .then(() => console.log('✅ Connected to PostgreSQL Database'))
+    .catch(err => console.error('❌ PostgreSQL Connection Error:', err));
 
-module.exports = connection;
+module.exports = pool;
