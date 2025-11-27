@@ -1,130 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recruitify - Recruiter Login</title>
-  <link rel="stylesheet" href="style.css"> <!-- optional separate CSS -->
-</head>
-<body>
-  <div class="auth-container">
-    <div class="auth-toggle">
-      <button class="toggle-btn active" id="loginToggle">LOGIN</button>
-      <button class="toggle-btn" id="signupToggle">SIGNUP</button>
-    </div>
-
-    <h2 class="title" id="authTitle">RECRUITER LOGIN</h2>
-
-    <!-- Login Form -->
-    <form id="loginForm" class="auth-form active">
-      <div class="form-group">
-        <input type="email" placeholder="Email" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <input type="password" placeholder="Password" class="form-input" required>
-      </div>
-      <button type="submit" class="auth-btn">Login</button>
-    </form>
-
-    <!-- Signup Form -->
-    <form id="signupForm" class="auth-form">
-      <div class="form-group">
-        <input type="text" placeholder="Company Name" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <input type="text" placeholder="GST Number" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <input type="email" placeholder="Official Email Address" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <input type="password" placeholder="Create Password" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <input type="password" placeholder="Confirm Password" class="form-input" required>
-      </div>
-      <button type="submit" class="auth-btn">Signup</button>
-    </form>
-  </div>
-
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const loginToggle = document.getElementById('loginToggle');
-    const signupToggle = document.getElementById('signupToggle');
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    const authTitle = document.getElementById('authTitle');
-
-    loginToggle.onclick = () => {
-      loginToggle.classList.add('active');
-      signupToggle.classList.remove('active');
-      loginForm.classList.add('active');
-      signupForm.classList.remove('active');
-      authTitle.textContent = 'RECRUITER LOGIN';
-    };
-
-    signupToggle.onclick = () => {
-      signupToggle.classList.add('active');
-      loginToggle.classList.remove('active');
-      signupForm.classList.add('active');
-      loginForm.classList.remove('active');
-      authTitle.textContent = 'RECRUITER SIGNUP';
-    };
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = loginForm.querySelector('input[type="email"]').value.trim();
-      const password = loginForm.querySelector('input[type="password"]').value.trim();
-      try {
-        const res = await fetch('http://localhost:5000/api/recruiter/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('Login successful!');
-          localStorage.setItem('recruiterToken', data.token);
-        } else {
-          alert(data.message);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitify - Recruiter Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      } catch (err) {
-        console.error(err);
-        alert('Login failed. Try again.');
-      }
-    });
 
-    signupForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const companyName = signupForm.querySelector('input[placeholder="Company Name"]').value.trim();
-      const gstNumber = signupForm.querySelector('input[placeholder="GST Number"]').value.trim();
-      const email = signupForm.querySelector('input[placeholder="Official Email Address"]').value.trim();
-      const password = signupForm.querySelector('input[placeholder="Create Password"]').value.trim();
-      const confirmPassword = signupForm.querySelector('input[placeholder="Confirm Password"]').value.trim();
-
-      if (password !== confirmPassword) {
-        alert('Passwords do not match');
-        return;
-      }
-
-      try {
-        const res = await fetch('http://localhost:5000/api/recruiter/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyName, gstNumber, email, password })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('Signup successful! Please login.');
-        } else {
-          alert(data.message);
+        :root {
+            --dusky-rose: #D9BCAF;
+            --thistle: #8A9688;
+            --hawthorne-green: #283D3B;
+            --royal-scepter: #795663;
+            --blue-noir: #011627;
         }
-      } catch (err) {
-        console.error(err);
-        alert('Signup failed. Try again.');
-      }
-    });
-  });
-  </script>
-</body>
-</html>
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .auth-container {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(1, 22, 39, 0.25);
+            padding: 50px 80px;
+            width: 100%;
+            max-width: 700px;
+            min-height: 700px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--dusky-rose), var(--thistle), var(--hawthorne-green), var(--royal-scepter), var(--blue-noir));
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: var(--hawthorne-green);
+            font-size: 65px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin: 0 0 8px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo p {
+            color: var(--royal-scepter);
+            font-size: 25px;
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
+
+        .auth-toggle {
+            display: flex;
+            background: rgba(217, 188, 175, 0.15);
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--hawthorne-green);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(1, 22, 39, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .title {
+            color: var(--hawthorne-green);
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 35px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 20px 25px;
+            border: 2px solid rgba(138, 150, 136, 0.3);
+            border-radius: 15px;
+            font-size: 16px;
+            background: rgba(217, 188, 175, 0.1);
+            transition: all 0.3s ease;
+            color: var(--hawthorne-green);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-input::placeholder {
+            color: rgba(40, 61, 59, 0.8);
+            font-weight: 400;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--royal-scepter);
+            background: rgba(217, 188, 175, 0.15);
+            box-shadow: 0 0 0 4px rgba(121, 86, 99, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(1, 22, 39, 0.4);
+            letter-spacing: 0.2px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(1, 22, 39, 0.5);
+            background: linear-gradient(135deg, var(--hawthorne-green) 0%, var(--blue-noir) 100%);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .forgot-password a {
+            color: var(--royal-scepter);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password a:hover {
+            color: var(--thistle);
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(138, 150, 136, 0.2);
+            color: var(--hawthorne-green);
+            font-weight: 500;
+        }
+
+        .switch-link a {
+            color: var(--royal-scepter);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .switch-link a:hover {
+            color: var(--thistle);
+        }
+
+        /* Hide forms initially */
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Background Effects */
+        .background-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(217, 188, 175, 0.08);
+            animation: floatRandom 8s ease-in-out infinite;
+        }
+
+        .circle-1 {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 8%;
+            animation-delay: 0s;
+        }
+
+        .circle-2 {
+            width: 180px;
+            height: 180px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+            background: rgba(138, 150, 136, 0.06);
+        }
