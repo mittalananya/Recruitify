@@ -325,6 +325,7 @@ loginForm.addEventListener('submit', async function (e) {
 
         if (response.ok) {
             alert("Login successful!");
+            window.location.href = "studentdashboard.html"; 
         } else {
             alert(data.error || "Login failed");
         }
@@ -364,8 +365,8 @@ signupForm.addEventListener('submit', async function (e) {
         const data = await response.json();
 
         if (response.ok) {
-            alert("Signup successful! Please login.");
-            switchToLogin();
+            alert("Signup successful! please proceed with profile creation");
+            window.location.href = "studentprofile.html"; 
         } else {
             alert(data.error || "Signup failed");
         }
