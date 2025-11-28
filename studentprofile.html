@@ -660,19 +660,32 @@
 
         const data = await response.json();
 
-        if (response.ok) {
-            // Update localStorage with complete profile
-            localStorage.setItem('studentData', JSON.stringify(data.student));
-            
-            alert('Profile completed successfully!');
-            window.location.href = 'studentdashboard.html';
-        } else {
-            alert(data.error || 'Failed to update profile');
-        }
-    } catch (err) {
-        alert('Error: ' + err.message);
+       if (response.ok) {
+    const data = await response.json(); // Only parse JSON if response is OK
+    
+    // Update localStorage with complete profile
+    localStorage.setItem('studentData', JSON.stringify(data.student));
+    
+    alert('Profile completed successfully!');
+    window.location.href = 'studentdashboard.html';
+} else {
+    // For errors, try to parse JSON, but handle if it's HTML
+    let errorMessage = 'Failed to update profile';
+    try {
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+    } catch (e) {
+        // If JSON parsing fails, get text response
+        const text = await response.text();
+        console.error('Server returned:', text);
+        errorMessage = `Server error (${response.status})`;
     }
-});
+    alert(errorMessage);
+}
+} catch (err) {
+    console.error('Network error:', err);
+    alert('Error: ' + err.message);
+}
 
     </script>
 </body>
