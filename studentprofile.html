@@ -659,7 +659,8 @@
         });
 
         const data = await response.json();
-
+  // Redirect to student dashboard
+    window.location.href = "studentdashboard.html";
        if (response.ok) {
     const data = await response.json(); // Only parse JSON if response is OK
     
