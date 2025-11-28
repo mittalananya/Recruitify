@@ -1153,10 +1153,7 @@ window.addEventListener('DOMContentLoaded', async function() {
             const skillsData = await skillsResponse.json();
             renderSkills(skillsData);
         }
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to load dashboard');
-    }
+    } 
 });
 
         // End of script
@@ -1165,4 +1162,5 @@ window.addEventListener('DOMContentLoaded', async function() {
 
 
 </html>
+
 
