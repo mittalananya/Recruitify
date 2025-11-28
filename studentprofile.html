@@ -600,6 +600,17 @@
             button.parentElement.remove();
         }
 
+        addSemester();
+        addSemester();
+
+        document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
+            input.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
        document.getElementById('profileForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -663,17 +674,6 @@
     }
 });
 
-        addSemester();
-        addSemester();
-
-        document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
-            input.addEventListener('focus', function () {
-                this.parentElement.style.transform = 'scale(1.02)';
-            });
-            input.addEventListener('blur', function () {
-                this.parentElement.style.transform = 'scale(1)';
-            });
-        });
     </script>
 </body>
 
