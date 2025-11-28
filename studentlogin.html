@@ -308,6 +308,7 @@ loginToggle.addEventListener('click', switchToLogin);
 signupToggle.addEventListener('click', switchToSignup);
 
 /* LOGIN */
+/* LOGIN */
 loginForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -324,7 +325,20 @@ loginForm.addEventListener('submit', async function (e) {
         const data = await response.json();
 
         if (response.ok) {
-            window.location.href = "studentdashboard.html"; 
+            // Store token and student data
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('studentData', JSON.stringify(data.student));
+            
+            // Check if profile is completed
+            if (data.student.profile_completed) {
+                // Go to dashboard
+                alert("Login successful!");
+                window.location.href = "studentdashboard.html";
+            } else {
+                // Go to profile completion
+                alert("Please complete your profile first!");
+                window.location.href = "studentprofile.html";
+            }
         } else {
             alert(data.error || "Login failed");
         }
@@ -332,8 +346,10 @@ loginForm.addEventListener('submit', async function (e) {
     } catch (err) {
         alert("Error: " + err.message);
     }
+
 });
 
+/* SIGNUP */
 /* SIGNUP */
 signupForm.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -364,8 +380,13 @@ signupForm.addEventListener('submit', async function (e) {
         const data = await response.json();
 
         if (response.ok) {
-            alert("Signup successful! please proceed with profile creation");
-            window.location.href = "studentprofile.html"; 
+            // Store student data temporarily for profile completion
+            localStorage.setItem('studentData', JSON.stringify(data.student));
+            
+            alert("Signup successful! Please complete your profile.");
+            
+            // Redirect to profile completion page
+            window.location.href = "studentprofile.html";
         } else {
             alert(data.error || "Signup failed");
         }
@@ -373,6 +394,7 @@ signupForm.addEventListener('submit', async function (e) {
     } catch (err) {
         alert("Error: " + err.message);
     }
+
 });
 </script>
 
