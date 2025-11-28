@@ -611,7 +611,7 @@
                 this.parentElement.style.transform = 'scale(1)';
             });
         });
-       document.getElementById('profileForm').addEventListener('submit', async function (e) {
+      document.getElementById('profileForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     // Get student data from localStorage
@@ -646,7 +646,7 @@
         tagline: document.getElementById('tagline').value || null,
         linkedin: document.getElementById('linkedin').value || null,
         github: document.getElementById('github').value || null,
-        sgpa: sgpaArray.length > 0 ? sgpaArray : null
+        sgpa: sgpaArray.length > 0 ? JSON.stringify(sgpaArray) : null
     };
 
     try {
@@ -658,36 +658,33 @@
             body: JSON.stringify(profileData)
         });
 
-        const data = await response.json();}
-  // Redirect to student dashboard
-    window.location.href = "studentdashboard.html";
-       if (response.ok) {
-    const data = await response.json(); // Only parse JSON if response is OK
-    
-    // Update localStorage with complete profile
-    localStorage.setItem('studentData', JSON.stringify(data.student));
-    
-    alert('Profile completed successfully!');
-    window.location.href = 'studentdashboard.html';
-} else {
-    // For errors, try to parse JSON, but handle if it's HTML
-    let errorMessage = 'Failed to update profile';
-    try {
-        const data = await response.json();
-        errorMessage = data.error || errorMessage;
-    } catch (e) {
-        // If JSON parsing fails, get text response
-        const text = await response.text();
-        console.error('Server returned:', text);
-        errorMessage = `Server error (${response.status})`;
+        // Check if response is OK FIRST, then parse JSON
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update localStorage with complete profile
+            localStorage.setItem('studentData', JSON.stringify(data.student));
+            
+            alert('Profile completed successfully!');
+            window.location.href = 'studentdashboard.html';
+        } else {
+            // Handle error responses
+            let errorMessage = 'Failed to update profile';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                const text = await response.text();
+                console.error('Server returned:', text);
+                errorMessage = `Server error (${response.status})`;
+            }
+            alert(errorMessage);
+        }
+    } catch (err) {
+        console.error('Network error:', err);
+        alert('Error connecting to server: ' + err.message);
     }
-    alert(errorMessage);
-}
-} catch (err) {
-    console.error('Network error:', err);
-    alert('Error: ' + err.message);
-}
-
+});
     </script>
 </body>
 
