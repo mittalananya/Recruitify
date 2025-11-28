@@ -176,6 +176,12 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        .form-input:disabled {
+            background: rgba(138, 150, 136, 0.1);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
         .form-textarea {
             resize: vertical;
             min-height: 100px;
@@ -311,7 +317,6 @@
             transform: translateY(0);
         }
 
-        /* Background Effects */
         .background-effects {
             position: fixed;
             top: 0;
@@ -356,20 +361,15 @@
         }
 
         @keyframes floatRandom {
-
-            0%,
-            100% {
+            0%, 100% {
                 transform: translate(0, 0) rotate(0deg);
             }
-
             25% {
                 transform: translate(30px, -30px) rotate(90deg);
             }
-
             50% {
                 transform: translate(-20px, -40px) rotate(180deg);
             }
-
             75% {
                 transform: translate(-30px, 15px) rotate(270deg);
             }
@@ -431,7 +431,7 @@
             </div>
         </div>
 
-        <h2 class="title">Create student Profile</h2>
+        <h2 class="title">Complete Your Profile</h2>
         <p class="subtitle">Let's build your professional presence and showcase your potential</p>
 
         <form id="profileForm">
@@ -451,21 +451,21 @@
                 </div>
             </div>
 
-            <!-- Basic Information Grid -->
+            <!-- Basic Information Grid (Pre-filled from signup) -->
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Roll Number <span class="required">*</span></label>
-                    <input type="text" class="form-input" id="rollNumber" required>
+                    <label class="form-label">Roll Number</label>
+                    <input type="text" class="form-input" id="rollNumber" readonly disabled>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Full Name <span class="required">*</span></label>
-                    <input type="text" class="form-input" id="fullName" required>
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="fullName" readonly disabled>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Email ID <span class="required">*</span></label>
-                    <input type="email" class="form-input" id="email" required>
+                    <label class="form-label">Email ID</label>
+                    <input type="email" class="form-input" id="email" readonly disabled>
                 </div>
 
                 <div class="form-group">
@@ -555,138 +555,155 @@
                 <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" style="display: none;">
             </div>
 
-            <button type="submit" class="create-profile-btn">Create student Profile</button>
+            <button type="submit" class="create-profile-btn">Complete Profile</button>
         </form>
     </div>
 
     <script>
-    let semesterCount = 0;
+        let semesterCount = 0;
 
-    document.getElementById('photoInput').addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('photoPreview').src = e.target.result;
-                document.getElementById('photoPreview').style.display = 'block';
-                document.getElementById('photoPlaceholder').style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+        // Pre-fill form with student data from localStorage
+        window.addEventListener('DOMContentLoaded', function() {
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+            
+            if (!studentData) {
+                alert('Please login first');
+                window.location.href = 'studentlogin.html';
+                return;
+            }
 
-    document.getElementById('resumeInput').addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-            document.getElementById('resumeText').textContent = 'Resume uploaded successfully!';
-            document.getElementById('resumeFileName').textContent = file.name;
-        }
-    });
-
-    function addSemester() {
-        semesterCount++;
-        const container = document.getElementById('semesterContainer');
-        const semesterDiv = document.createElement('div');
-        semesterDiv.className = 'semester-item';
-        semesterDiv.innerHTML = `
-            <input type="text" class="form-input" placeholder="Semester ${semesterCount}" readonly>
-            <input type="number" class="form-input" step="0.01" min="0" max="10" placeholder="SGPA (e.g., 8.5)">
-            <button type="button" class="remove-semester" onclick="removeSemester(this)">×</button>
-        `;
-        container.appendChild(semesterDiv);
-    }
-
-    function removeSemester(button) {
-        button.parentElement.remove();
-    }
-
-    addSemester();
-    addSemester();
-
-    document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(input => {
-        input.addEventListener('focus', function () {
-            this.parentElement.style.transform = 'scale(1.02)';
+            // Pre-fill readonly fields
+            document.getElementById('rollNumber').value = studentData.roll_number || '';
+            document.getElementById('fullName').value = studentData.full_name || '';
+            document.getElementById('email').value = studentData.email || '';
         });
-        input.addEventListener('blur', function () {
-            this.parentElement.style.transform = 'scale(1)';
-        });
-    });
 
-    document.getElementById('profileForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        // Get student data from localStorage
-        const studentData = JSON.parse(localStorage.getItem('studentData'));
-        
-        if (!studentData) {
-            alert('Please login first');
-            window.location.href = 'studentlogin.html';
-            return;
-        }
-
-        // Collect SGPA data
-        const sgpaInputs = document.querySelectorAll('#semesterContainer .semester-item input[type="number"]');
-        const sgpaArray = [];
-        sgpaInputs.forEach((input, index) => {
-            if (input.value) {
-                sgpaArray.push({
-                    semester: index + 1,
-                    sgpa: parseFloat(input.value)
-                });
+        document.getElementById('photoInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                    document.getElementById('photoPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        const profileData = {
-            phone: document.getElementById('phone').value,
-            dob: document.getElementById('dob').value,
-            address: document.getElementById('address').value,
-            college: document.getElementById('college').value,
-            branch: document.getElementById('branch').value,
-            cgpa: parseFloat(document.getElementById('cgpa').value),
-            year_of_study: document.getElementById('yearOfStudy').value,
-            tagline: document.getElementById('tagline').value || null,
-            linkedin: document.getElementById('linkedin').value || null,
-            github: document.getElementById('github').value || null,
-            sgpa: sgpaArray.length > 0 ? JSON.stringify(sgpaArray) : null
-        };
+        document.getElementById('resumeInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('resumeText').textContent = 'Resume uploaded successfully!';
+                document.getElementById('resumeFileName').textContent = file.name;
+            }
+        });
 
-        try {
-            const response = await fetch(`https://recruitify-a799.onrender.com/api/student/profile/${studentData.roll_number}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(profileData)
+        function addSemester() {
+            semesterCount++;
+            const container = document.getElementById('semesterContainer');
+            const semesterDiv = document.createElement('div');
+            semesterDiv.className = 'semester-item';
+            semesterDiv.innerHTML = `
+                <input type="text" class="form-input" placeholder="Semester ${semesterCount}" readonly>
+                <input type="number" class="form-input" step="0.01" min="0" max="10" placeholder="SGPA (e.g., 8.5)">
+                <button type="button" class="remove-semester" onclick="removeSemester(this)">×</button>
+            `;
+            container.appendChild(semesterDiv);
+        }
+
+        function removeSemester(button) {
+            button.parentElement.remove();
+        }
+
+        // Add 2 semesters by default
+        addSemester();
+        addSemester();
+
+        document.querySelectorAll('.form-input:not([disabled]), .form-select, .form-textarea').forEach(input => {
+            input.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Get student data from localStorage
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+            
+            if (!studentData) {
+                alert('Please login first');
+                window.location.href = 'studentlogin.html';
+                return;
+            }
+
+            // Collect SGPA data
+            const sgpaInputs = document.querySelectorAll('#semesterContainer .semester-item input[type="number"]');
+            const sgpaArray = [];
+            sgpaInputs.forEach((input, index) => {
+                if (input.value) {
+                    sgpaArray.push({
+                        semester: index + 1,
+                        sgpa: parseFloat(input.value)
+                    });
+                }
             });
 
-            // ✅ Check if response is OK FIRST, then parse JSON ONCE
-            if (response.ok) {
-                const data = await response.json(); // ✅ READ JSON HERE
-                
-                // Update localStorage with complete profile
-                localStorage.setItem('studentData', JSON.stringify(data.student));
-                
-                alert('Profile completed successfully!');
-                window.location.href = 'studentdashboard.html';
-            } else {
-                // Handle error responses
-                let errorMessage = 'Failed to update profile';
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorMessage;
-                } catch (e) {
-                    const text = await response.text();
-                    console.error('Server returned:', text);
-                    errorMessage = `Server error (${response.status})`;
+            const profileData = {
+                phone: document.getElementById('phone').value,
+                dob: document.getElementById('dob').value,
+                address: document.getElementById('address').value,
+                college: document.getElementById('college').value,
+                branch: document.getElementById('branch').value,
+                cgpa: parseFloat(document.getElementById('cgpa').value),
+                year_of_study: document.getElementById('yearOfStudy').value,
+                tagline: document.getElementById('tagline').value || null,
+                linkedin: document.getElementById('linkedin').value || null,
+                github: document.getElementById('github').value || null,
+                sgpa: sgpaArray.length > 0 ? JSON.stringify(sgpaArray) : null
+            };
+
+            try {
+                const response = await fetch(`https://recruitify-a799.onrender.com/api/student/profile/${studentData.roll_number}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                // Check if response is OK FIRST, then parse JSON ONCE
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update localStorage with complete profile
+                    localStorage.setItem('studentData', JSON.stringify(data.student));
+                    
+                    alert('Profile completed successfully!');
+                    window.location.href = 'studentdashboard.html';
+                } else {
+                    // Handle error responses
+                    let errorMessage = 'Failed to update profile';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        const text = await response.text();
+                        console.error('Server returned:', text);
+                        errorMessage = `Server error (${response.status})`;
+                    }
+                    alert(errorMessage);
                 }
-                alert(errorMessage);
+            } catch (err) {
+                console.error('Network error:', err);
+                alert('Error connecting to server: ' + err.message);
             }
-        } catch (err) {
-            console.error('Network error:', err);
-            alert('Error connecting to server: ' + err.message);
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 
 </html>
