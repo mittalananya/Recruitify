@@ -660,7 +660,6 @@
 
         // Check if response is OK FIRST, then parse JSON
         if (response.ok) {
-            const data = await response.json();
             
             // Update localStorage with complete profile
             localStorage.setItem('studentData', JSON.stringify(data.student));
