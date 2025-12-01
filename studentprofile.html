@@ -667,42 +667,42 @@
                 sgpa: sgpaArray.length > 0 ? JSON.stringify(sgpaArray) : null
             };
 
-            try {
-                const response = await fetch(`https://recruitify-a799.onrender.com/api/student/profile/${studentData.roll_number}`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(profileData)
-                });
-
-                // Check if response is OK FIRST, then parse JSON ONCE
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Update localStorage with complete profile
-                    localStorage.setItem('studentData', JSON.stringify(data.student));
-                    
-                    alert('Profile completed successfully!');
-                    window.location.href = 'studentdashboard.html';
-                } else {
-                    // Handle error responses
-                    let errorMessage = 'Failed to update profile';
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error || errorMessage;
-                    } catch (e) {
-                        const text = await response.text();
-                        console.error('Server returned:', text);
-                        errorMessage = `Server error (${response.status})`;
-                    }
-                    alert(errorMessage);
-                }
-            } catch (err) {
-                console.error('Network error:', err);
-                alert('Error connecting to server: ' + err.message);
-            }
-        });
+          try {
+    const response = await fetch(`https://recruitify-a799.onrender.com/api/student/profile/${studentData.roll_number}`, {
+        method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(profileData)
+    });
+    
+    if (response.ok) {
+        const data = await response.json();
+        
+        // Update localStorage with complete profile
+        localStorage.setItem('studentData', JSON.stringify(data.student));
+        
+        alert('Profile completed successfully!');
+        window.location.href = 'studentdashboard.html';
+    } else {
+        // ✅ FIXED: Read response body once as text, then parse
+        const text = await response.text();
+        let errorMessage = 'Failed to update profile';
+        
+        try {
+            const errorData = JSON.parse(text);
+            errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+            console.error('Server returned:', text);
+            errorMessage = `Server error (${response.status})`;
+        }
+        
+        alert(errorMessage);
+    }
+} catch (err) {
+    console.error('Network error:', err);
+    alert('Error connecting to server: ' + err.message);
+}
     </script>
 </body>
 
