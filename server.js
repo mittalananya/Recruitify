@@ -184,6 +184,158 @@ app.get('/api/student/dashboard/:roll_number', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// ===================================
+//       RECRUITER ROUTES
+// ===================================
+
+// ⭐ Recruiter Signup
+app.post('/api/recruiter/signup', async (req, res) => {
+  const { companyName, gstNumber, email, password } = req.body;
+  
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query = `
+      INSERT INTO recruiters (company_name, gst_number, email, password)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, company_name, gst_number, email, created_at
+    `;
+    
+    pool.query(query, [companyName, gstNumber, email, hashedPassword], (err, result) => {
+      if (err) {
+        console.error('Signup error:', err);
+        if (err.code === '23505') {
+          return res.status(400).json({ 
+            success: false,
+            message: 'GST number or email already exists' 
+          });
+        }
+        return res.status(500).json({ 
+          success: false,
+          message: 'Signup failed' 
+        });
+      }
+      
+      const recruiter = result.rows[0];
+      const token = jwt.sign(
+        { id: recruiter.id, email: recruiter.email, type: 'recruiter' },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      
+      res.status(201).json({
+        success: true,
+        message: 'Recruiter registered successfully',
+        token,
+        recruiter: {
+          id: recruiter.id,
+          company_name: recruiter.company_name,
+          gst_number: recruiter.gst_number,
+          email: recruiter.email,
+          created_at: recruiter.created_at
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error' 
+    });
+  }
+});
+
+// ⭐ Recruiter Login
+app.post('/api/recruiter/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  const query = 'SELECT * FROM recruiters WHERE email = $1';
+  
+  pool.query(query, [email], async (err, result) => {
+    if (err) {
+      console.error('Login error:', err);
+      return res.status(500).json({ 
+        success: false,
+        message: 'Login failed' 
+      });
+    }
+    
+    if (result.rows.length === 0) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid email or password' 
+      });
+    }
+    
+    const recruiter = result.rows[0];
+    const isPasswordValid = await bcrypt.compare(password, recruiter.password);
+    
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid email or password' 
+      });
+    }
+    
+    const token = jwt.sign(
+      { id: recruiter.id, email: recruiter.email, type: 'recruiter' },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      recruiter: {
+        id: recruiter.id,
+        company_name: recruiter.company_name,
+        gst_number: recruiter.gst_number,
+        email: recruiter.email,
+        created_at: recruiter.created_at
+      }
+    });
+  });
+});
+
+// ⭐ Get Recruiter Dashboard Data
+app.get('/api/recruiter/dashboard/:email', async (req, res) => {
+  const { email } = req.params;
+  
+  try {
+    const query = 'SELECT * FROM recruiters WHERE email = $1';
+    
+    pool.query(query, [email], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ 
+          success: false,
+          message: 'Failed to fetch profile' 
+        });
+      }
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          success: false,
+          message: 'Recruiter not found' 
+        });
+      }
+      
+      const recruiter = result.rows[0];
+      delete recruiter.password; // Don't send password
+      
+      res.json({
+        success: true,
+        recruiter
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error' 
+    });
+  }
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
