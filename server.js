@@ -7,17 +7,77 @@ require('dotenv').config();
 
 const app = express();
 
-// CORS
-app.use(cors({
-  origin: "https://mittalananya.github.io",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-app.use(express.json());
+// ============================================
+// MIDDLEWARE
+// ============================================
 
-// Test route
+// CORS Configuration
+app.use(cors({
+  origin: [
+    "https://mittalananya.github.io",
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
+// ============================================
+// HEALTH & TEST ROUTES
+// ============================================
+
+// Root route
 app.get('/', (req, res) => {
-  res.json({ message: '🚀 Placement Portal Backend is Running!' });
+  res.json({ 
+    message: '🚀 Placement Portal Backend is Running!',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      students: '/api/student/*',
+      recruiters: '/api/recruiter/*'
+    }
+  });
+});
+
+// Health check route - ADDED THIS!
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection
+    const result = await pool.query('SELECT NOW()');
+    res.json({ 
+      status: 'ok',
+      message: 'Server and database are running',
+      timestamp: new Date().toISOString(),
+      database: 'connected',
+      dbTime: result.rows[0].now
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Database connection failed',
+      error: error.message
+    });
+  }
+});
+
+// Test database connection on startup
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Database connection failed:', err.message);
+  } else {
+    console.log('✅ Database connected successfully at', res.rows[0].now);
+  }
 });
 
 // ===================================
@@ -29,6 +89,8 @@ app.post('/api/student/signup', async (req, res) => {
   const { roll_number, full_name, email, password } = req.body;
   
   try {
+    console.log('📝 Student signup attempt:', { roll_number, email });
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = `
       INSERT INTO students (roll_number, full_name, email, password)
@@ -38,7 +100,7 @@ app.post('/api/student/signup', async (req, res) => {
     
     pool.query(query, [roll_number, full_name, email, hashedPassword], (err, result) => {
       if (err) {
-        console.log(err);
+        console.error('Student signup error:', err);
         if (err.code === '23505') {
           return res.status(400).json({ error: 'Roll number or email already exists' });
         }
@@ -46,6 +108,8 @@ app.post('/api/student/signup', async (req, res) => {
       }
       
       const student = result.rows[0];
+      console.log('✅ Student registered:', student.roll_number);
+      
       res.status(201).json({
         message: 'Student registered successfully',
         student: {
@@ -57,6 +121,7 @@ app.post('/api/student/signup', async (req, res) => {
       });
     });
   } catch (error) {
+    console.error('Server error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -65,24 +130,36 @@ app.post('/api/student/signup', async (req, res) => {
 app.post('/api/student/login', (req, res) => {
   const { roll_number, password } = req.body;
   
+  console.log('🔐 Student login attempt:', roll_number);
+  
   const query = 'SELECT * FROM students WHERE roll_number = $1';
   
   pool.query(query, [roll_number], async (err, result) => {
-    if (err) return res.status(500).json({ error: 'Login failed' });
-    if (result.rows.length === 0)
+    if (err) {
+      console.error('Login query error:', err);
+      return res.status(500).json({ error: 'Login failed' });
+    }
+    
+    if (result.rows.length === 0) {
+      console.log('❌ Student not found:', roll_number);
       return res.status(401).json({ error: 'Invalid roll number or password' });
+    }
     
     const student = result.rows[0];
     const isPasswordValid = await bcrypt.compare(password, student.password);
     
-    if (!isPasswordValid)
+    if (!isPasswordValid) {
+      console.log('❌ Invalid password for:', roll_number);
       return res.status(401).json({ error: 'Invalid roll number or password' });
+    }
     
     const token = jwt.sign(
       { id: student.id, roll_number: student.roll_number, type: 'student' },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
+    
+    console.log('✅ Student login successful:', roll_number);
     
     res.json({
       message: 'Login successful',
@@ -114,6 +191,8 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
   } = req.body;
   
   try {
+    console.log('📝 Updating profile for:', roll_number);
+    
     const query = `
       UPDATE students 
       SET phone = $1, dob = $2, address = $3, college = $4, 
@@ -131,7 +210,7 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
       year_of_study, tagline, linkedin, github, sgpaJson, roll_number
     ], (err, result) => {
       if (err) {
-        console.error(err);
+        console.error('Profile update error:', err);
         return res.status(500).json({ error: 'Profile update failed' });
       }
       
@@ -140,7 +219,9 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
       }
       
       const student = result.rows[0];
-      delete student.password; // Don't send password
+      delete student.password;
+      
+      console.log('✅ Profile updated for:', roll_number);
       
       res.json({
         message: 'Profile updated successfully',
@@ -148,7 +229,7 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
       });
     });
   } catch (error) {
-    console.error(error);
+    console.error('Server error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -162,7 +243,7 @@ app.get('/api/student/dashboard/:roll_number', async (req, res) => {
     
     pool.query(query, [roll_number], (err, result) => {
       if (err) {
-        console.error(err);
+        console.error('Dashboard fetch error:', err);
         return res.status(500).json({ error: 'Failed to fetch profile' });
       }
       
@@ -175,15 +256,16 @@ app.get('/api/student/dashboard/:roll_number', async (req, res) => {
       
       res.json({
         student,
-        skillsCount: 0,  // TODO: Count from skills table when implemented
-        projectsCount: 0  // TODO: Count from projects when implemented
+        skillsCount: 0,
+        projectsCount: 0
       });
     });
   } catch (error) {
-    console.error(error);
+    console.error('Server error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 // ===================================
 //       RECRUITER ROUTES
 // ===================================
@@ -193,6 +275,15 @@ app.post('/api/recruiter/signup', async (req, res) => {
   const { companyName, gstNumber, email, password } = req.body;
   
   try {
+    console.log('📝 Recruiter signup attempt:', { companyName, email });
+    
+    if (!companyName || !email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Please provide all required fields' 
+      });
+    }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = `
       INSERT INTO recruiters (company_name, gst_number, email, password)
@@ -202,7 +293,7 @@ app.post('/api/recruiter/signup', async (req, res) => {
     
     pool.query(query, [companyName, gstNumber, email, hashedPassword], (err, result) => {
       if (err) {
-        console.error('Signup error:', err);
+        console.error('Recruiter signup error:', err);
         if (err.code === '23505') {
           return res.status(400).json({ 
             success: false,
@@ -211,7 +302,7 @@ app.post('/api/recruiter/signup', async (req, res) => {
         }
         return res.status(500).json({ 
           success: false,
-          message: 'Signup failed' 
+          message: 'Signup failed: ' + err.message 
         });
       }
       
@@ -221,6 +312,8 @@ app.post('/api/recruiter/signup', async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
+      
+      console.log('✅ Recruiter registered:', recruiter.email);
       
       res.status(201).json({
         success: true,
@@ -239,7 +332,7 @@ app.post('/api/recruiter/signup', async (req, res) => {
     console.error('Server error:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Server error' 
+      message: 'Server error: ' + error.message 
     });
   }
 });
@@ -247,6 +340,8 @@ app.post('/api/recruiter/signup', async (req, res) => {
 // ⭐ Recruiter Login
 app.post('/api/recruiter/login', (req, res) => {
   const { email, password } = req.body;
+  
+  console.log('🔐 Recruiter login attempt:', email);
   
   const query = 'SELECT * FROM recruiters WHERE email = $1';
   
@@ -260,6 +355,7 @@ app.post('/api/recruiter/login', (req, res) => {
     }
     
     if (result.rows.length === 0) {
+      console.log('❌ Recruiter not found:', email);
       return res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -270,6 +366,7 @@ app.post('/api/recruiter/login', (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, recruiter.password);
     
     if (!isPasswordValid) {
+      console.log('❌ Invalid password for:', email);
       return res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -281,6 +378,8 @@ app.post('/api/recruiter/login', (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
+    
+    console.log('✅ Recruiter login successful:', email);
     
     res.json({
       success: true,
@@ -306,7 +405,7 @@ app.get('/api/recruiter/dashboard/:email', async (req, res) => {
     
     pool.query(query, [email], (err, result) => {
       if (err) {
-        console.error(err);
+        console.error('Dashboard fetch error:', err);
         return res.status(500).json({ 
           success: false,
           message: 'Failed to fetch profile' 
@@ -321,7 +420,7 @@ app.get('/api/recruiter/dashboard/:email', async (req, res) => {
       }
       
       const recruiter = result.rows[0];
-      delete recruiter.password; // Don't send password
+      delete recruiter.password;
       
       res.json({
         success: true,
@@ -329,7 +428,7 @@ app.get('/api/recruiter/dashboard/:email', async (req, res) => {
       });
     });
   } catch (error) {
-    console.error(error);
+    console.error('Server error:', error);
     res.status(500).json({ 
       success: false,
       message: 'Server error' 
@@ -337,8 +436,49 @@ app.get('/api/recruiter/dashboard/:email', async (req, res) => {
   }
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+// ============================================
+// ERROR HANDLING
+// ============================================
+
+// 404 handler
+app.use((req, res) => {
+  console.log('❌ 404 - Route not found:', req.path);
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.path,
+    message: 'The requested endpoint does not exist'
+  });
 });
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('❌ Server Error:', err.stack);
+  res.status(err.status || 500).json({ 
+    error: err.message || 'Internal server error'
+  });
+});
+
+// ============================================
+// START SERVER
+// ============================================
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+    ================================
+    🚀 Server is running!
+    ================================
+    Port: ${PORT}
+    Environment: ${process.env.NODE_ENV || 'development'}
+    Database: PostgreSQL
+    ================================
+  `);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Rejection:', err);
+});
+
+module.exports = app;
