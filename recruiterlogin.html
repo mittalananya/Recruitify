@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,21 +27,16 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow-x: hidden;
         }
 
         .auth-container {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.98);
             border-radius: 25px;
             box-shadow: 0 15px 40px rgba(1, 22, 39, 0.25);
             padding: 50px 80px;
             width: 100%;
             max-width: 700px;
-            min-height: 700px;
             position: relative;
-            overflow: hidden;
         }
 
         .auth-container::before {
@@ -55,11 +49,6 @@
             background: linear-gradient(90deg, var(--dusky-rose), var(--thistle), var(--hawthorne-green), var(--royal-scepter), var(--blue-noir));
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
         .logo {
             text-align: center;
             margin-bottom: 30px;
@@ -69,17 +58,13 @@
             color: var(--hawthorne-green);
             font-size: 65px;
             font-weight: bold;
-            letter-spacing: 0.5px;
             margin: 0 0 8px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .logo p {
             color: var(--royal-scepter);
             font-size: 25px;
-            font-weight: 400;
             margin: 0;
-            letter-spacing: 0.3px;
         }
 
         .auth-toggle {
@@ -88,7 +73,6 @@
             border-radius: 15px;
             padding: 8px;
             margin-bottom: 30px;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .toggle-btn {
@@ -102,14 +86,12 @@
             color: var(--hawthorne-green);
             cursor: pointer;
             transition: all 0.3s ease;
-            letter-spacing: 0.3px;
         }
 
         .toggle-btn.active {
-            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            background: linear-gradient(135deg, var(--blue-noir), var(--hawthorne-green));
             color: white;
             box-shadow: 0 4px 15px rgba(1, 22, 39, 0.3);
-            transform: translateY(-2px);
         }
 
         .title {
@@ -118,12 +100,10 @@
             font-weight: 700;
             margin-bottom: 35px;
             text-align: center;
-            letter-spacing: 0.5px;
         }
 
         .form-group {
             margin-bottom: 25px;
-            position: relative;
         }
 
         .form-input {
@@ -133,28 +113,20 @@
             border-radius: 15px;
             font-size: 16px;
             background: rgba(217, 188, 175, 0.1);
-            transition: all 0.3s ease;
             color: var(--hawthorne-green);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .form-input::placeholder {
-            color: rgba(40, 61, 59, 0.8);
-            font-weight: 400;
+            transition: all 0.3s ease;
         }
 
         .form-input:focus {
             outline: none;
             border-color: var(--royal-scepter);
             background: rgba(217, 188, 175, 0.15);
-            box-shadow: 0 0 0 4px rgba(121, 86, 99, 0.1);
-            transform: translateY(-2px);
         }
 
         .auth-btn {
             width: 100%;
             padding: 20px;
-            background: linear-gradient(135deg, var(--blue-noir) 0%, var(--hawthorne-green) 100%);
+            background: linear-gradient(135deg, var(--blue-noir), var(--hawthorne-green));
             color: white;
             border: none;
             border-radius: 15px;
@@ -163,34 +135,17 @@
             cursor: pointer;
             transition: all 0.4s ease;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(1, 22, 39, 0.4);
-            letter-spacing: 0.2px;
         }
 
         .auth-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 15px 35px rgba(1, 22, 39, 0.5);
-            background: linear-gradient(135deg, var(--hawthorne-green) 0%, var(--blue-noir) 100%);
         }
 
-        .auth-btn:active {
-            transform: translateY(0);
-        }
-
-        .forgot-password {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .forgot-password a {
-            color: var(--royal-scepter);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .forgot-password a:hover {
-            color: var(--thistle);
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .switch-link {
@@ -206,249 +161,28 @@
             color: var(--royal-scepter);
             text-decoration: none;
             font-weight: 600;
-            margin-left: 5px;
-            transition: color 0.3s ease;
+            cursor: pointer;
         }
 
-        .switch-link a:hover {
-            color: var(--thistle);
-        }
-
-        /* Hide forms initially */
         .auth-form {
             display: none;
         }
 
         .auth-form.active {
             display: block;
-            animation: slideIn 0.5s ease forwards;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Background Effects */
-        .background-effects {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .floating-circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(217, 188, 175, 0.08);
-            animation: floatRandom 8s ease-in-out infinite;
-        }
-
-        .circle-1 {
-            width: 120px;
-            height: 120px;
-            top: 15%;
-            left: 8%;
-            animation-delay: 0s;
-        }
-
-        .circle-2 {
-            width: 180px;
-            height: 180px;
-            top: 60%;
-            right: 10%;
-            animation-delay: 2s;
-            background: rgba(138, 150, 136, 0.06);
-        }
-
-        .circle-3 {
-            width: 90px;
-            height: 90px;
-            bottom: 25%;
-            left: 15%;
-            animation-delay: 4s;
-            background: rgba(121, 86, 99, 0.08);
-        }
-
-        .circle-4 {
-            width: 150px;
-            height: 150px;
-            top: 35%;
-            right: 25%;
-            animation-delay: 6s;
-            background: rgba(217, 188, 175, 0.05);
-        }
-
-        .circle-5 {
-            width: 70px;
-            height: 70px;
-            bottom: 15%;
-            right: 35%;
-            animation-delay: 3s;
-            background: rgba(138, 150, 136, 0.08);
-        }
-
-        @keyframes floatRandom {
-
-            0%,
-            100% {
-                transform: translate(0, 0) rotate(0deg);
-            }
-
-            25% {
-                transform: translate(30px, -30px) rotate(90deg);
-            }
-
-            50% {
-                transform: translate(-20px, -40px) rotate(180deg);
-            }
-
-            75% {
-                transform: translate(-30px, 15px) rotate(270deg);
-            }
-        }
-
-        /* Container floating circles */
-        .container-effects {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            overflow: hidden;
-            border-radius: 25px;
-        }
-
-        .container-circle {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.1;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .container-circle-1 {
-            width: 60px;
-            height: 60px;
-            background: var(--dusky-rose);
-            top: 20%;
-            right: -30px;
-            animation-delay: 0s;
-        }
-
-        .container-circle-2 {
-            width: 40px;
-            height: 40px;
-            background: var(--thistle);
-            bottom: 30%;
-            left: -20px;
-            animation-delay: 2s;
-        }
-
-        .container-circle-3 {
-            width: 80px;
-            height: 80px;
-            background: var(--royal-scepter);
-            top: 60%;
-            right: 10%;
-            animation-delay: 4s;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-20px) rotate(180deg);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .auth-container {
-                padding: 40px 50px;
-                margin: 20px;
-                max-width: 90%;
-                min-height: 650px;
-            }
-
-            .logo h1 {
-                font-size: 55px;
-            }
-
-            .logo p {
-                font-size: 22px;
-            }
-
-            .title {
-                font-size: 32px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .auth-container {
-                padding: 30px 40px;
-                min-height: 600px;
-            }
-
-            .logo h1 {
-                font-size: 50px;
-            }
-
-            .logo p {
-                font-size: 20px;
-            }
-
-            .title {
-                font-size: 28px;
-            }
-
-            .toggle-btn {
-                font-size: 14px;
-                padding: 12px 16px;
-            }
         }
     </style>
 </head>
-
 <body>
-    <div class="background-effects">
-        <div class="floating-circle circle-1"></div>
-        <div class="floating-circle circle-2"></div>
-        <div class="floating-circle circle-3"></div>
-        <div class="floating-circle circle-4"></div>
-        <div class="floating-circle circle-5"></div>
-    </div>
-
     <div class="auth-container">
-        <div class="container-effects">
-            <div class="container-circle container-circle-1"></div>
-            <div class="container-circle container-circle-2"></div>
-            <div class="container-circle container-circle-3"></div>
-        </div>
-
-        <div class="header">
-            <div class="logo">
-                <h1>RECRUITIFY</h1>
-                <p>Beyond Resumes</p>
-            </div>
+        <div class="logo">
+            <h1>RECRUITIFY</h1>
+            <p>Beyond Resumes</p>
         </div>
 
         <div class="auth-toggle">
-            <button class="toggle-btn active" id="loginToggle">LOGIN</button>
-            <button class="toggle-btn" id="signupToggle">SIGNUP</button>
+            <button type="button" class="toggle-btn active" id="loginToggle">LOGIN</button>
+            <button type="button" class="toggle-btn" id="signupToggle">SIGNUP</button>
         </div>
 
         <h2 class="title" id="authTitle">RECRUITER LOGIN</h2>
@@ -456,217 +190,210 @@
         <!-- Login Form -->
         <form class="auth-form active" id="loginForm">
             <div class="form-group">
-                <input type="email" class="form-input" placeholder="Email Address" required>
+                <input type="email" class="form-input" id="loginEmail" placeholder="Email Address" required>
             </div>
-
             <div class="form-group">
-                <input type="password" class="form-input" placeholder="Password" required>
+                <input type="password" class="form-input" id="loginPassword" placeholder="Password" required>
             </div>
-
-            <button type="submit" class="auth-btn">Login</button>
-
-            <div class="forgot-password">
-                <a href="#">Forgot password?</a>
-            </div>
-
+            <button type="submit" class="auth-btn" id="loginBtn">Login</button>
             <div class="switch-link">
-                Need to register your company? <a href="#" onclick="switchToSignup()">Signup</a>
+                Need to register your company? <a id="switchToSignupLink">Signup</a>
             </div>
         </form>
 
         <!-- Signup Form -->
         <form class="auth-form" id="signupForm">
             <div class="form-group">
-                <input type="text" class="form-input" placeholder="Company Name" required>
+                <input type="text" class="form-input" id="companyName" placeholder="Company Name" required>
             </div>
-
             <div class="form-group">
-                <input type="text" class="form-input" placeholder="GST Number" required>
+                <input type="text" class="form-input" id="gstNumber" placeholder="GST Number">
             </div>
-
             <div class="form-group">
-                <input type="email" class="form-input" placeholder="Official Email Address" required>
+                <input type="email" class="form-input" id="signupEmail" placeholder="Official Email Address" required>
             </div>
-
             <div class="form-group">
-                <input type="password" class="form-input" placeholder="Create Password" required>
+                <input type="password" class="form-input" id="signupPassword" placeholder="Create Password" required>
             </div>
-
             <div class="form-group">
-                <input type="password" class="form-input" placeholder="Confirm Password" required>
+                <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm Password" required>
             </div>
-
-            <button type="submit" class="auth-btn">Create Account</button>
-
+            <button type="submit" class="auth-btn" id="signupBtn">Create Account</button>
             <div class="switch-link">
-                Already have an account? <a href="#" onclick="switchToLogin()">Login</a>
+                Already have an account? <a id="switchToLoginLink">Login</a>
             </div>
         </form>
     </div>
 
-<script>
+    <script>
+        const API_BASE = 'https://recruitify-a799.onrender.com/api/recruiter';
 
-(function(){
-  if (window.recruitifyInitialized) return;
-  window.recruitifyInitialized = true;
+        // Get elements
+        const loginToggle = document.getElementById('loginToggle');
+        const signupToggle = document.getElementById('signupToggle');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const authTitle = document.getElementById('authTitle');
+        const switchToSignupLink = document.getElementById('switchToSignupLink');
+        const switchToLoginLink = document.getElementById('switchToLoginLink');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const loginToggle = document.getElementById('loginToggle');
-    const signupToggle = document.getElementById('signupToggle');
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    const authTitle = document.getElementById('authTitle');
+        // Switch to login
+        function switchToLogin() {
+            loginToggle.classList.add('active');
+            signupToggle.classList.remove('active');
+            loginForm.classList.add('active');
+            signupForm.classList.remove('active');
+            authTitle.textContent = 'RECRUITER LOGIN';
+        }
 
-    function switchToLogin() {
-      loginToggle.classList.add('active');
-      signupToggle.classList.remove('active');
-      loginForm.classList.add('active');
-      signupForm.classList.remove('active');
-      authTitle.textContent = 'RECRUITER LOGIN';
-    }
+        // Switch to signup
+        function switchToSignup() {
+            signupToggle.classList.add('active');
+            loginToggle.classList.remove('active');
+            signupForm.classList.add('active');
+            loginForm.classList.remove('active');
+            authTitle.textContent = 'RECRUITER SIGNUP';
+        }
 
-    function switchToSignup() {
-      signupToggle.classList.add('active');
-      loginToggle.classList.remove('active');
-      signupForm.classList.add('active');
-      loginForm.classList.remove('active');
-      authTitle.textContent = 'RECRUITER SIGNUP';
-    }
+        // Event listeners for toggle
+        loginToggle.addEventListener('click', switchToLogin);
+        signupToggle.addEventListener('click', switchToSignup);
+        switchToSignupLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchToSignup();
+        });
+        switchToLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchToLogin();
+        });
 
-    if (loginToggle) loginToggle.addEventListener('click', switchToLogin);
-    if (signupToggle) signupToggle.addEventListener('click', switchToSignup);
-
-    window.switchToSignup = switchToSignup;
-    window.switchToLogin = switchToLogin;
-
-    // -------- LOGIN FORM SUBMIT --------
-    if (loginForm) {
-      loginForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const email = this.querySelector('input[type="email"]').value.trim();
-        const password = this.querySelector('input[type="password"]').value.trim();
-
-        console.log('Attempting login with:', { email });
-
-        try {
-          const response = await fetch('https://recruitify-a799.onrender.com/api/recruiter/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-          });
-
-          console.log('Response status:', response.status);
-
-          const result = await response.json();
-          console.log('Result:', result);
-
-          if(result.success) {
-            // Store token
-            if(result.token) {
-              localStorage.setItem('token', result.token);
-              localStorage.setItem('recruiterToken', result.token);
-            }
+        // LOGIN HANDLER
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            // Store recruiter data
-            if(result.recruiter) {
-              localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
-              localStorage.setItem('recruiterId', result.recruiter.id);
-              localStorage.setItem('recruiterName', result.recruiter.company_name);
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
             }
 
-            console.log('✅ Data stored successfully');
-            console.log('Token:', localStorage.getItem('token'));
-            console.log('Recruiter ID:', localStorage.getItem('recruiterId'));
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
 
-            alert('Login successful! Redirecting to dashboard...');
-            window.location.href = 'recruiterdashboard.html';
-          } else {
-            alert(result.message || 'Invalid email or password');
-          }
+            try {
+                console.log('🔐 Attempting login for:', email);
 
-        } catch (err) {
-          console.error('Login error:', err);
-          alert('Connection error. Please check if the server is running.');
-        }
-      });
-    }
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-    // -------- SIGNUP FORM SUBMIT --------
-    if (signupForm) {
-      signupForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+                const result = await response.json();
+                console.log('📊 Login response:', result);
 
-        const companyName = this.querySelector('input[placeholder="Company Name"]').value.trim();
-        const gstNumber = this.querySelector('input[placeholder="GST Number"]').value.trim();
-        const email = this.querySelector('input[placeholder="Official Email Address"]').value.trim();
-        const password = this.querySelector('input[placeholder="Create Password"]').value.trim();
-        const confirmPassword = this.querySelector('input[placeholder="Confirm Password"]').value.trim();
+                if (result.success && result.recruiter) {
+                    // Store data
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('recruiterToken', result.token);
+                    localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
+                    localStorage.setItem('recruiterId', result.recruiter.id);
+                    localStorage.setItem('recruiterName', result.recruiter.company_name);
 
-        if(password !== confirmPassword) {
-          alert("Passwords do not match.");
-          return;
-        }
+                    console.log('✅ Login successful! Stored data:');
+                    console.log('   - Token:', result.token.substring(0, 20) + '...');
+                    console.log('   - Recruiter ID:', result.recruiter.id);
+                    console.log('   - Company:', result.recruiter.company_name);
 
-        console.log('Attempting signup with:', { companyName, gstNumber, email });
-
-        try {
-          const response = await fetch('https://recruitify-a799.onrender.com/api/recruiter/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ companyName, gstNumber, email, password })
-          });
-
-          console.log('Response status:', response.status);
-          
-          const result = await response.json();
-          console.log('Result:', result);
-
-          if(result.success) {
-            // Store token
-            if(result.token) {
-              localStorage.setItem('token', result.token);
-              localStorage.setItem('recruiterToken', result.token);
+                    alert('Login successful! Redirecting...');
+                    
+                    // Redirect after a brief delay
+                    setTimeout(() => {
+                        window.location.href = 'recruiterdashboard.html';
+                    }, 500);
+                } else {
+                    alert(result.message || 'Login failed');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login';
+                }
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                alert('Connection error. Please try again.');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
             }
-            
-            // Store recruiter data
-            if(result.recruiter) {
-              localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
-              localStorage.setItem('recruiterId', result.recruiter.id);
-              localStorage.setItem('recruiterName', result.recruiter.company_name);
+        });
+
+        // SIGNUP HANDLER
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const companyName = document.getElementById('companyName').value.trim();
+            const gstNumber = document.getElementById('gstNumber').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+            if (!companyName || !email || !password || !confirmPassword) {
+                alert('Please fill in all required fields');
+                return;
             }
 
-            console.log('✅ Data stored successfully');
-            console.log('Token:', localStorage.getItem('token'));
-            console.log('Recruiter ID:', localStorage.getItem('recruiterId'));
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
 
-            alert('Account created successfully! Redirecting to dashboard...');
-            window.location.href = 'recruiterdashboard.html';
-          } else {
-            alert(result.message || 'Signup failed.');
-          }
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
 
-        } catch(err) {
-          console.error('Signup error:', err);
-          alert('Connection error. Please check if the server is running.');
-        }
-      });
-    }
+            try {
+                console.log('📝 Attempting signup for:', email);
 
-    // Focus/blur subtle effects
-    document.querySelectorAll('.form-input').forEach(input => {
-      input.addEventListener('focus', function () {
-        if(this.parentElement) this.parentElement.style.transform = 'scale(1.02)';
-      });
-      input.addEventListener('blur', function () {
-        if(this.parentElement) this.parentElement.style.transform = 'scale(1)';
-      });
-    });
+                const response = await fetch(`${API_BASE}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ companyName, gstNumber, email, password })
+                });
 
-  });
-})();
-</script>
+                const result = await response.json();
+                console.log('📊 Signup response:', result);
 
+                if (result.success && result.recruiter) {
+                    // Store data
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('recruiterToken', result.token);
+                    localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
+                    localStorage.setItem('recruiterId', result.recruiter.id);
+                    localStorage.setItem('recruiterName', result.recruiter.company_name);
+
+                    console.log('✅ Signup successful! Stored data:');
+                    console.log('   - Token:', result.token.substring(0, 20) + '...');
+                    console.log('   - Recruiter ID:', result.recruiter.id);
+                    console.log('   - Company:', result.recruiter.company_name);
+
+                    alert('Account created successfully! Redirecting...');
+                    
+                    // Redirect after a brief delay
+                    setTimeout(() => {
+                        window.location.href = 'recruiterdashboard.html';
+                    }, 500);
+                } else {
+                    alert(result.message || 'Signup failed');
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = 'Create Account';
+                }
+            } catch (error) {
+                console.error('❌ Signup error:', error);
+                alert('Connection error. Please try again.');
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Create Account';
+            }
+        });
+    </script>
 </body>
-
 </html>
