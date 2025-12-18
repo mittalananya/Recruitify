@@ -1,5 +1,5 @@
 {
-  "name": "placement-backend",
+  "name": "recruitify-backend",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -12,7 +12,6 @@
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.15.3",
     "pg": "^8.11.0"
   },
   "devDependencies": {
