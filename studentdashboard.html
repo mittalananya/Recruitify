@@ -1114,28 +1114,39 @@ Notes & Integration tips:
             }
         } 
       // Load student data when page opens
+// Load student data when page opens
 window.addEventListener('DOMContentLoaded', async function() {
     const studentData = JSON.parse(localStorage.getItem('studentData'));
     
-    if (!studentData) {
+    if (!studentData || !studentData.roll_number) {
         alert('Please login first');
         window.location.href = 'studentlogin.html';
         return;
     }
     
     try {
-        const response = await fetch(`https://recruitify-a799.onrender.com/api/student/dashboard/${studentData.roll_number}`);
-        const data = await response.json();
+        console.log('Loading dashboard for:', studentData.roll_number);
         
-        if (response.ok) {
+        const response = await fetch(`https://recruitify-a799.onrender.com/api/student/dashboard/${studentData.roll_number}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Dashboard data received:', data);
+        
+        if (data && data.student) {
             const student = data.student;
             
             // Update profile section
-            const firstName = student.full_name.split(' ')[0];
+            const firstName = student.full_name ? student.full_name.split(' ')[0] : 'Guest';
+            const firstLetter = student.full_name ? student.full_name.charAt(0).toUpperCase() : '?';
+            
             document.getElementById('welcomeMessage').textContent = `Hello, ${firstName}!`;
-            document.getElementById('profileAvatar').textContent = student.full_name.charAt(0).toUpperCase();
-            document.getElementById('profilePhoto').textContent = student.full_name.charAt(0).toUpperCase();
-            document.getElementById('profileName').textContent = student.full_name;
+            document.getElementById('profileAvatar').textContent = firstLetter;
+            document.getElementById('profilePhoto').textContent = firstLetter;
+            document.getElementById('profileName').textContent = student.full_name || 'Guest';
             document.getElementById('profileTagline').textContent = student.tagline || 'Add a tagline to describe yourself';
             document.getElementById('skillsCount').textContent = data.skillsCount || 0;
             document.getElementById('projectsCount').textContent = data.projectsCount || 0;
@@ -1144,30 +1155,24 @@ window.addEventListener('DOMContentLoaded', async function() {
             // Update academic info
             if (student.college) {
                 document.getElementById('academicDetails').innerHTML = `
-                    <p><strong>College:</strong> ${student.college}</p>
-                    <p><strong>Branch:</strong> ${student.branch || 'N/A'}</p>
-                    <p><strong>Year:</strong> ${student.year_of_study || 'N/A'}</p>
-                    <p><strong>Email:</strong> ${student.email}</p>
-                    <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
-                    <p><strong>Address:</strong> ${student.address || 'N/A'}</p>
-                    ${student.linkedin ? `<p><strong>LinkedIn:</strong> <a href="${student.linkedin}" target="_blank">View Profile</a></p>` : ''}
-                    ${student.github ? `<p><strong>GitHub:</strong> <a href="${student.github}" target="_blank">View Profile</a></p>` : ''}
+                    <div style="line-height: 1.8;">
+                        <p><strong>College:</strong> ${student.college}</p>
+                        <p><strong>Branch:</strong> ${student.branch || 'N/A'}</p>
+                        <p><strong>Year:</strong> ${student.year_of_study || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${student.email}</p>
+                        <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
+                        <p><strong>Address:</strong> ${student.address || 'N/A'}</p>
+                        ${student.linkedin ? `<p><strong>LinkedIn:</strong> <a href="${student.linkedin}" target="_blank" style="color: var(--dusky-rose);">View Profile</a></p>` : ''}
+                        ${student.github ? `<p><strong>GitHub:</strong> <a href="${student.github}" target="_blank" style="color: var(--dusky-rose);">View Profile</a></p>` : ''}
+                    </div>
                 `;
             }
-        } else {
-            alert('Failed to load dashboard data');
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to load dashboard');
+        console.error('Error loading dashboard:', error);
+        alert('Failed to load dashboard. Please try logging in again.');
+        // Don't redirect immediately, let user see the error
     }
-});
-            // Load skills
-            const skillsResponse = await fetch(`http://localhost:3000/api/student/skills/${studentId}`);
-            const skillsData = await skillsResponse.json();
-            renderSkills(skillsData);
-        }
-    } 
 });
 
         // End of script
@@ -1176,6 +1181,7 @@ window.addEventListener('DOMContentLoaded', async function() {
 
 
 </html>
+
 
 
 
