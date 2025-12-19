@@ -184,6 +184,7 @@ app.post('/api/student/login', (req, res) => {
 
 // ⭐ Update Student Profile
 // ⭐ Update Student Profile
+// ⭐ Update Student Profile - FIXED VERSION
 app.put('/api/student/profile/:roll_number', async (req, res) => {
   const { roll_number } = req.params;
   const { 
@@ -193,10 +194,22 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
   
   try {
     console.log('📝 Updating profile for:', roll_number);
-    console.log('Received data:', req.body);
+    console.log('📦 Received data:', req.body);
     
-    // Build the query dynamically to only update provided fields
-    const query = `
+    // First check if student exists
+    const checkQuery = 'SELECT id FROM students WHERE roll_number = $1';
+    const checkResult = await pool.query(checkQuery, [roll_number]);
+    
+    if (checkResult.rows.length === 0) {
+      console.log('❌ Student not found:', roll_number);
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Convert sgpa to JSON string if needed
+    const sgpaJson = sgpa ? (typeof sgpa === 'string' ? sgpa : JSON.stringify(sgpa)) : null;
+    
+    // Update the profile
+    const updateQuery = `
       UPDATE students 
       SET 
         full_name = COALESCE($1, full_name),
@@ -212,14 +225,13 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
         linkedin = $11, 
         github = $12, 
         sgpa = $13, 
-        profile_completed = true
+        profile_completed = true,
+        updated_at = CURRENT_TIMESTAMP
       WHERE roll_number = $14
       RETURNING *
     `;
     
-    const sgpaJson = sgpa ? (typeof sgpa === 'string' ? sgpa : JSON.stringify(sgpa)) : null;
-    
-    pool.query(query, [
+    const result = await pool.query(updateQuery, [
       full_name,
       email,
       phone, 
@@ -234,35 +246,26 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
       github, 
       sgpaJson, 
       roll_number
-    ], (err, result) => {
-      if (err) {
-        console.error('Profile update error:', err);
-        console.error('Error details:', err.message);
-        return res.status(500).json({ 
-          error: 'Profile update failed',
-          details: err.message 
-        });
-      }
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Student not found' });
-      }
-      
-      const student = result.rows[0];
-      delete student.password;
-      
-      console.log('✅ Profile updated for:', roll_number);
-      
-      res.json({
-        message: 'Profile updated successfully',
-        student
-      });
+    ]);
+    
+    const student = result.rows[0];
+    delete student.password;
+    
+    console.log('✅ Profile updated successfully for:', roll_number);
+    
+    res.json({
+      message: 'Profile updated successfully',
+      student
     });
+    
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('❌ Profile update error:', error.message);
+    console.error('Stack:', error.stack);
+    
     res.status(500).json({ 
-      error: 'Server error',
-      details: error.message 
+      error: 'Profile update failed',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
