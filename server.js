@@ -183,35 +183,65 @@ app.post('/api/student/login', (req, res) => {
 });
 
 // ⭐ Update Student Profile
+// ⭐ Update Student Profile
 app.put('/api/student/profile/:roll_number', async (req, res) => {
   const { roll_number } = req.params;
   const { 
-    phone, dob, address, college, branch, cgpa, 
+    full_name, email, phone, dob, address, college, branch, cgpa, 
     year_of_study, tagline, linkedin, github, sgpa 
   } = req.body;
   
   try {
     console.log('📝 Updating profile for:', roll_number);
+    console.log('Received data:', req.body);
     
+    // Build the query dynamically to only update provided fields
     const query = `
       UPDATE students 
-      SET phone = $1, dob = $2, address = $3, college = $4, 
-          branch = $5, cgpa = $6, year_of_study = $7, 
-          tagline = $8, linkedin = $9, github = $10, 
-          sgpa = $11, profile_completed = true
-      WHERE roll_number = $12
+      SET 
+        full_name = COALESCE($1, full_name),
+        email = COALESCE($2, email),
+        phone = $3, 
+        dob = $4, 
+        address = $5, 
+        college = $6, 
+        branch = $7, 
+        cgpa = $8, 
+        year_of_study = $9, 
+        tagline = $10, 
+        linkedin = $11, 
+        github = $12, 
+        sgpa = $13, 
+        profile_completed = true
+      WHERE roll_number = $14
       RETURNING *
     `;
     
-    const sgpaJson = sgpa ? JSON.stringify(sgpa) : null;
+    const sgpaJson = sgpa ? (typeof sgpa === 'string' ? sgpa : JSON.stringify(sgpa)) : null;
     
     pool.query(query, [
-      phone, dob, address, college, branch, cgpa, 
-      year_of_study, tagline, linkedin, github, sgpaJson, roll_number
+      full_name,
+      email,
+      phone, 
+      dob, 
+      address, 
+      college, 
+      branch, 
+      cgpa, 
+      year_of_study, 
+      tagline, 
+      linkedin, 
+      github, 
+      sgpaJson, 
+      roll_number
     ], (err, result) => {
       if (err) {
         console.error('Profile update error:', err);
-        return res.status(500).json({ error: 'Profile update failed' });
+        console.error('Error details:', err.message);
+        return res.status(500).json({ 
+          error: 'Profile update failed',
+          details: err.message 
+        });
       }
       
       if (result.rows.length === 0) {
@@ -230,7 +260,10 @@ app.put('/api/student/profile/:roll_number', async (req, res) => {
     });
   } catch (error) {
     console.error('Server error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ 
+      error: 'Server error',
+      details: error.message 
+    });
   }
 });
 
