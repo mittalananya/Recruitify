@@ -1178,7 +1178,81 @@ window.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
+  loadSkills(); // load skills when page opens
 });
+      async function loadSkills() {
+    const studentData = JSON.parse(localStorage.getItem('studentData'));
+    if (!studentData) return;
+
+    try {
+        const response = await fetch(`https://recruitify-backened.onrender.com/api/skills/${studentData.roll_number}`);
+        const data = await response.json();
+
+        // Update counts
+        document.getElementById('skillsCount').textContent = data.total || 0;
+        document.getElementById('projectsCount').textContent = data.hard ? data.hard.length : 0;
+
+        // Render hard skills
+        const hardContainer = document.getElementById('hardSkillsContainer');
+        if (data.hard && data.hard.length > 0) {
+            hardContainer.innerHTML = data.hard.map(skill => `
+                <div class="skill-item">
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-description">${skill.description}</div>
+                    ${skill.project_title ? `<div style="margin-top:8px; font-size:13px; color:var(--hawthorne-green);"><strong>Project:</strong> ${skill.project_title}</div>` : ''}
+                    ${skill.project_link ? `<a class="project-link" href="${skill.project_link}" target="_blank">View Project</a>` : ''}
+                    <button onclick="deleteSkill(${skill.id})" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:12px;">Delete</button>
+                </div>
+            `).join('');
+        } else {
+            hardContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">💻</div>
+                    <h3>Add Your First Hard Skill</h3>
+                    <p>Showcase your technical abilities with project links</p>
+                    <button class="btn-primary" onclick="openSkillModal('hard')">Add Hard Skill</button>
+                </div>`;
+        }
+
+        // Render soft skills
+        const softContainer = document.getElementById('softSkillsContainer');
+        if (data.soft && data.soft.length > 0) {
+            softContainer.innerHTML = data.soft.map(skill => `
+                <div class="skill-item">
+                    <div class="skill-name">${skill.name}</div>
+                    <div class="skill-description">${skill.description}</div>
+                    <button onclick="deleteSkill(${skill.id})" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:12px;">Delete</button>
+                </div>
+            `).join('');
+        } else {
+            softContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🌟</div>
+                    <h3>Add Your First Soft Skill</h3>
+                    <p>Highlight your interpersonal and leadership abilities</p>
+                    <button class="btn-primary" onclick="openSkillModal('soft')">Add Soft Skill</button>
+                </div>`;
+        }
+    } catch (err) {
+        console.error('Error loading skills:', err);
+    }
+}
+
+async function deleteSkill(skillId) {
+    if (!confirm('Are you sure you want to delete this skill?')) return;
+    try {
+        const response = await fetch(`https://recruitify-backened.onrender.com/api/skills/${skillId}`, {
+            method: 'DELETE'
+        });
+        if (response.ok) {
+            loadSkills();
+        }
+    } catch (err) {
+        alert('Error deleting skill: ' + err.message);
+    }
+}
+
+      
 </script>
 
 </body>
