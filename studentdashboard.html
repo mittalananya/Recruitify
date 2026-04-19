@@ -1008,44 +1008,53 @@ Notes & Integration tips:
         }
 
         // Form submission: currently logs payload and shows alert. Replace console.log with a fetch to your backend.
-        document.getElementById('skillForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const skillData = {
-                type: document.getElementById('skillType').value,
-                name: document.getElementById('skillName').value.trim(),
-                description: document.getElementById('skillDescription').value.trim(),
-                project: {
-                    title: document.getElementById('projectTitle').value.trim(),
-                    description: document.getElementById('projectDescription').value.trim(),
-                    link: document.getElementById('projectLink').value.trim()
-                }
-            };
+       
+          document.getElementById('skillForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-            // Frontend validation example (backend must also validate):
-            if (!skillData.name || !skillData.description) {
-                alert('Please provide the skill name and description.');
-                return;
-            }
-            if (skillData.type === 'hard') {
-                // basic URL check for project link
-                try {
-                    const url = new URL(skillData.project.link);
-                } catch (err) {
-                    alert('Please enter a valid project link (https://...).');
-                    return;
-                }
-            }
+    const studentData = JSON.parse(localStorage.getItem('studentData'));
+    const rollNumber = studentData.roll_number;
+    const type = document.getElementById('skillType').value;
 
-            // TODO: replace with real API call. Example (fetch):
-            // fetch('/api/skills', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer <token>'}, body: JSON.stringify(skillData) })
-            //   .then(res => res.json())
-            //   .then(createdSkill => { /* update DOM, increment counts */ })
-            //   .catch(err => { alert('Failed to save skill'); });
+    const skillData = {
+        type,
+        name: document.getElementById('skillName').value.trim(),
+        description: document.getElementById('skillDescription').value.trim(),
+        project_title: document.getElementById('projectTitle').value.trim(),
+        project_description: document.getElementById('projectDescription').value.trim(),
+        project_link: document.getElementById('projectLink').value.trim()
+    };
 
-            console.log('Skill to be added:', skillData);
-            alert('Skill will be saved when backend is connected!');
-            closeSkillModal();
+    if (!skillData.name || !skillData.description) {
+        alert('Please provide skill name and description.');
+        return;
+    }
+
+    if (type === 'hard' && !skillData.project_link) {
+        alert('Please provide a project link for hard skills.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://recruitify-backened.onrender.com/api/skills/${rollNumber}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(skillData)
         });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('✅ Skill added successfully!');
+            closeSkillModal();
+            loadSkills(); // refresh skills display
+        } else {
+            alert(data.error || 'Failed to add skill');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
 
         function editProfile() {
             // This placeholder can be changed to open a profile edit modal or navigate to a profile edit page
