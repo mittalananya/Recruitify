@@ -16,19 +16,46 @@ app.use(cors({
 app.use(express.json());
 
 // ============ TEST ROUTE ============
-app.get('/', (req, res) => {
-  res.json({ message: '🚀 Recruitify Backend is Live!' });
-});
-
-app.get('/api/health', async (req, res) => {
+app.get('/api/setup', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ status: 'ok', database: 'connected', time: result.rows[0].now });
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS students (
+        id SERIAL PRIMARY KEY,
+        roll_number VARCHAR(20) UNIQUE NOT NULL,
+        full_name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        phone VARCHAR(15),
+        dob DATE,
+        address TEXT,
+        college VARCHAR(100),
+        branch VARCHAR(100),
+        cgpa DECIMAL(3,2),
+        year_of_study VARCHAR(20),
+        tagline VARCHAR(200),
+        linkedin VARCHAR(200),
+        github VARCHAR(200),
+        sgpa TEXT,
+        profile_completed BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS recruiters (
+        id SERIAL PRIMARY KEY,
+        company_name VARCHAR(100) NOT NULL,
+        gst_number VARCHAR(50) UNIQUE,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    res.json({ message: '✅ Tables created successfully!' });
   } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
-
 // ============ STUDENT ROUTES ============
 
 // Student Signup
