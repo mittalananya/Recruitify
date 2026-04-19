@@ -41,6 +41,7 @@ app.get('/api/setup', async (req, res) => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS recruiters (
         id SERIAL PRIMARY KEY,
@@ -51,7 +52,22 @@ app.get('/api/setup', async (req, res) => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    res.json({ message: '✅ Tables created successfully!' });
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS skills (
+        id SERIAL PRIMARY KEY,
+        roll_number VARCHAR(20) REFERENCES students(roll_number) ON DELETE CASCADE,
+        type VARCHAR(10) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        project_title VARCHAR(100),
+        project_description TEXT,
+        project_link VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    res.json({ message: '✅ All tables created successfully!' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -189,6 +205,49 @@ app.get('/api/recruiter/dashboard/:email', async (req, res) => {
     const recruiter = result.rows[0];
     delete recruiter.password;
     res.json({ recruiter });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ SKILLS ROUTES ============
+
+// Add a skill
+app.post('/api/skills/:roll_number', async (req, res) => {
+  const { roll_number } = req.params;
+  const { type, name, description, project_title, project_description, project_link } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO skills (roll_number, type, name, description, project_title, project_description, project_link)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [roll_number, type, name, description, project_title || null, project_description || null, project_link || null]
+    );
+    res.status(201).json({ message: 'Skill added successfully', skill: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all skills for a student
+app.get('/api/skills/:roll_number', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM skills WHERE roll_number = $1 ORDER BY created_at DESC',
+      [req.params.roll_number]
+    );
+    const hard = result.rows.filter(s => s.type === 'hard');
+    const soft = result.rows.filter(s => s.type === 'soft');
+    res.json({ hard, soft, total: result.rows.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a skill
+app.delete('/api/skills/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM skills WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Skill deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
