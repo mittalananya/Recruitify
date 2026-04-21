@@ -126,3 +126,242 @@ app.post('/api/student/login', async (req, res) => {
     );
     delete student.password;
     res.json({ message: 'Login successful', token, student });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/student/profile/:roll_number', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM students WHERE roll_number = $1', [req.params.roll_number]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Student not found' });
+    const student = result.rows[0];
+    delete student.password;
+    res.json({ student });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/student/profile/:roll_number', async (req, res) => {
+  const { roll_number } = req.params;
+  const { full_name, email, phone, dob, address, college, branch, cgpa, year_of_study, tagline, linkedin, github, sgpa } = req.body;
+  try {
+    const sgpaJson = sgpa ? JSON.stringify(sgpa) : null;
+    const result = await pool.query(
+      `UPDATE students SET 
+        full_name=COALESCE($1,full_name), email=COALESCE($2,email),
+        phone=$3, dob=$4, address=$5, college=$6, branch=$7,
+        cgpa=$8, year_of_study=$9, tagline=$10, linkedin=$11,
+        github=$12, sgpa=$13, profile_completed=true, updated_at=CURRENT_TIMESTAMP
+       WHERE roll_number=$14 RETURNING *`,
+      [full_name, email, phone, dob, address, college, branch, cgpa, year_of_study, tagline, linkedin, github, sgpaJson, roll_number]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Student not found' });
+    const student = result.rows[0];
+    delete student.password;
+    res.json({ message: 'Profile updated successfully', student });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ RECRUITER ROUTES ============
+
+app.post('/api/recruiter/signup', async (req, res) => {
+  const { companyName, gstNumber, email, password } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      'INSERT INTO recruiters (company_name, gst_number, email, password) VALUES ($1, $2, $3, $4) RETURNING id, company_name, gst_number, email',
+      [companyName, gstNumber, email, hashedPassword]
+    );
+    const recruiter = result.rows[0];
+    const token = jwt.sign(
+      { id: recruiter.id, email: recruiter.email, type: 'recruiter' },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    res.status(201).json({ message: 'Recruiter registered successfully', token, recruiter });
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'GST number or email already exists' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/recruiter/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const result = await pool.query('SELECT * FROM recruiters WHERE email = $1', [email]);
+    if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid email or password' });
+    const recruiter = result.rows[0];
+    const isValid = await bcrypt.compare(password, recruiter.password);
+    if (!isValid) return res.status(401).json({ error: 'Invalid email or password' });
+    const token = jwt.sign(
+      { id: recruiter.id, email: recruiter.email, type: 'recruiter' },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    delete recruiter.password;
+    res.json({ message: 'Login successful', token, recruiter });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/recruiter/dashboard/:email', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM recruiters WHERE email = $1', [req.params.email]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Recruiter not found' });
+    const recruiter = result.rows[0];
+    delete recruiter.password;
+    res.json({ recruiter });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get jobs by recruiter
+app.get('/api/recruiter/jobs/:recruiter_id', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM jobs WHERE recruiter_id = $1 ORDER BY created_at DESC',
+      [req.params.recruiter_id]
+    );
+    res.json({ jobs: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get applicants for recruiter's jobs
+app.get('/api/recruiter/applicants/:recruiter_id', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT a.*, s.full_name, s.email, s.branch, s.cgpa, j.title as job_title
+       FROM applications a
+       JOIN students s ON a.roll_number = s.roll_number
+       JOIN jobs j ON a.job_id = j.id
+       WHERE j.recruiter_id = $1
+       ORDER BY a.applied_at DESC`,
+      [req.params.recruiter_id]
+    );
+    res.json({ applicants: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ SKILLS ROUTES ============
+
+app.post('/api/skills/:roll_number', async (req, res) => {
+  const { roll_number } = req.params;
+  const { type, name, description, project_title, project_description, project_link } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO skills (roll_number, type, name, description, project_title, project_description, project_link)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [roll_number, type, name, description, project_title || null, project_description || null, project_link || null]
+    );
+    res.status(201).json({ message: 'Skill added successfully', skill: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/skills/:roll_number', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM skills WHERE roll_number = $1 ORDER BY created_at DESC',
+      [req.params.roll_number]
+    );
+    const hard = result.rows.filter(s => s.type === 'hard');
+    const soft = result.rows.filter(s => s.type === 'soft');
+    res.json({ hard, soft, total: result.rows.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/skills/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM skills WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Skill deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ JOBS ROUTES ============
+
+// Get all jobs (for students to browse)
+app.get('/api/jobs', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM jobs ORDER BY created_at DESC');
+    res.json({ jobs: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Post a job (recruiter)
+app.post('/api/jobs', async (req, res) => {
+  const { recruiter_id, title, company, location, description, requirements, salary, deadline } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO jobs (recruiter_id, title, company, location, description, requirements, salary, deadline)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [recruiter_id, title, company, location, description, requirements, salary, deadline || null]
+    );
+    res.status(201).json({ message: 'Job posted successfully', job: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ APPLICATIONS ROUTES ============
+
+// Apply for a job
+app.post('/api/apply', async (req, res) => {
+  const { roll_number, job_id } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO applications (roll_number, job_id) VALUES ($1, $2) RETURNING *`,
+      [roll_number, job_id]
+    );
+    res.status(201).json({ message: 'Applied successfully!', application: result.rows[0] });
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'Already applied for this job' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get my applications (student)
+app.get('/api/apply/:roll_number', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT a.*, j.title, j.company, j.location, j.salary, j.deadline
+       FROM applications a
+       JOIN jobs j ON a.job_id = j.id
+       WHERE a.roll_number = $1
+       ORDER BY a.applied_at DESC`,
+      [req.params.roll_number]
+    );
+    res.json({ applications: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ 404 HANDLER ============
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// ============ START SERVER ============
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
+module.exports = app;
