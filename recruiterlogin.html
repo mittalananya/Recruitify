@@ -225,175 +225,144 @@
         </form>
     </div>
 
-    <script>
-        const API_BASE = 'https://recruitify-a799.onrender.com/api/recruiter';
+    
+       <script>
+const API_BASE = 'https://recruitify-backened.onrender.com/api/recruiter';
 
-        // Get elements
-        const loginToggle = document.getElementById('loginToggle');
-        const signupToggle = document.getElementById('signupToggle');
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-        const authTitle = document.getElementById('authTitle');
-        const switchToSignupLink = document.getElementById('switchToSignupLink');
-        const switchToLoginLink = document.getElementById('switchToLoginLink');
-        const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
+const loginToggle = document.getElementById('loginToggle');
+const signupToggle = document.getElementById('signupToggle');
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+const authTitle = document.getElementById('authTitle');
+const switchToSignupLink = document.getElementById('switchToSignupLink');
+const switchToLoginLink = document.getElementById('switchToLoginLink');
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
 
-        // Switch to login
-        function switchToLogin() {
-            loginToggle.classList.add('active');
-            signupToggle.classList.remove('active');
-            loginForm.classList.add('active');
-            signupForm.classList.remove('active');
-            authTitle.textContent = 'RECRUITER LOGIN';
+function switchToLogin() {
+    loginToggle.classList.add('active');
+    signupToggle.classList.remove('active');
+    loginForm.classList.add('active');
+    signupForm.classList.remove('active');
+    authTitle.textContent = 'RECRUITER LOGIN';
+}
+
+function switchToSignup() {
+    signupToggle.classList.add('active');
+    loginToggle.classList.remove('active');
+    signupForm.classList.add('active');
+    loginForm.classList.remove('active');
+    authTitle.textContent = 'RECRUITER SIGNUP';
+}
+
+loginToggle.addEventListener('click', switchToLogin);
+signupToggle.addEventListener('click', switchToSignup);
+switchToSignupLink.addEventListener('click', (e) => { e.preventDefault(); switchToSignup(); });
+switchToLoginLink.addEventListener('click', (e) => { e.preventDefault(); switchToLogin(); });
+
+/* ===== LOGIN ===== */
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    if (!email || !password) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in...';
+
+    try {
+        const response = await fetch(`${API_BASE}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.json();
+
+        if (result.token && result.recruiter) {
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('recruiterToken', result.token);
+            localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
+            localStorage.setItem('recruiterId', result.recruiter.id);
+            localStorage.setItem('recruiterName', result.recruiter.company_name);
+
+            alert('Login successful! Redirecting...');
+            setTimeout(() => {
+                window.location.href = 'recruiterdashboard.html';
+            }, 500);
+        } else {
+            alert(result.error || result.message || 'Login failed');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Login';
         }
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Connection error. Please try again.');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+    }
+});
 
-        // Switch to signup
-        function switchToSignup() {
-            signupToggle.classList.add('active');
-            loginToggle.classList.remove('active');
-            signupForm.classList.add('active');
-            loginForm.classList.remove('active');
-            authTitle.textContent = 'RECRUITER SIGNUP';
+/* ===== SIGNUP ===== */
+signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const companyName = document.getElementById('companyName').value.trim();
+    const gstNumber = document.getElementById('gstNumber').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+    const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+    if (!companyName || !email || !password || !confirmPassword) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+
+    signupBtn.disabled = true;
+    signupBtn.textContent = 'Creating account...';
+
+    try {
+        const response = await fetch(`${API_BASE}/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ companyName, gstNumber, email, password })
+        });
+
+        const result = await response.json();
+
+        if (result.token && result.recruiter) {
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('recruiterToken', result.token);
+            localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
+            localStorage.setItem('recruiterId', result.recruiter.id);
+            localStorage.setItem('recruiterName', result.recruiter.company_name);
+
+            alert('Account created successfully! Redirecting...');
+            setTimeout(() => {
+                window.location.href = 'recruiterdashboard.html';
+            }, 500);
+        } else {
+            alert(result.error || result.message || 'Signup failed');
+            signupBtn.disabled = false;
+            signupBtn.textContent = 'Create Account';
         }
-
-        // Event listeners for toggle
-        loginToggle.addEventListener('click', switchToLogin);
-        signupToggle.addEventListener('click', switchToSignup);
-        switchToSignupLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchToSignup();
-        });
-        switchToLoginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchToLogin();
-        });
-
-        // LOGIN HANDLER
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            if (!email || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
-
-            try {
-                console.log('🔐 Attempting login for:', email);
-
-                const response = await fetch(`${API_BASE}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const result = await response.json();
-                console.log('📊 Login response:', result);
-
-                if (result.success && result.recruiter) {
-                    // Store data
-                    localStorage.setItem('token', result.token);
-                    localStorage.setItem('recruiterToken', result.token);
-                    localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
-                    localStorage.setItem('recruiterId', result.recruiter.id);
-                    localStorage.setItem('recruiterName', result.recruiter.company_name);
-
-                    console.log('✅ Login successful! Stored data:');
-                    console.log('   - Token:', result.token.substring(0, 20) + '...');
-                    console.log('   - Recruiter ID:', result.recruiter.id);
-                    console.log('   - Company:', result.recruiter.company_name);
-
-                    alert('Login successful! Redirecting...');
-                    
-                    // Redirect after a brief delay
-                    setTimeout(() => {
-                        window.location.href = 'recruiterdashboard.html';
-                    }, 500);
-                } else {
-                    alert(result.message || 'Login failed');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Login';
-                }
-            } catch (error) {
-                console.error('❌ Login error:', error);
-                alert('Connection error. Please try again.');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
-            }
-        });
-
-        // SIGNUP HANDLER
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const companyName = document.getElementById('companyName').value.trim();
-            const gstNumber = document.getElementById('gstNumber').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value.trim();
-            const confirmPassword = document.getElementById('confirmPassword').value.trim();
-
-            if (!companyName || !email || !password || !confirmPassword) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                alert('Passwords do not match');
-                return;
-            }
-
-            signupBtn.disabled = true;
-            signupBtn.textContent = 'Creating account...';
-
-            try {
-                console.log('📝 Attempting signup for:', email);
-
-                const response = await fetch(`${API_BASE}/signup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ companyName, gstNumber, email, password })
-                });
-
-                const result = await response.json();
-                console.log('📊 Signup response:', result);
-
-                if (result.success && result.recruiter) {
-                    // Store data
-                    localStorage.setItem('token', result.token);
-                    localStorage.setItem('recruiterToken', result.token);
-                    localStorage.setItem('recruiter', JSON.stringify(result.recruiter));
-                    localStorage.setItem('recruiterId', result.recruiter.id);
-                    localStorage.setItem('recruiterName', result.recruiter.company_name);
-
-                    console.log('✅ Signup successful! Stored data:');
-                    console.log('   - Token:', result.token.substring(0, 20) + '...');
-                    console.log('   - Recruiter ID:', result.recruiter.id);
-                    console.log('   - Company:', result.recruiter.company_name);
-
-                    alert('Account created successfully! Redirecting...');
-                    
-                    // Redirect after a brief delay
-                    setTimeout(() => {
-                        window.location.href = 'recruiterdashboard.html';
-                    }, 500);
-                } else {
-                    alert(result.message || 'Signup failed');
-                    signupBtn.disabled = false;
-                    signupBtn.textContent = 'Create Account';
-                }
-            } catch (error) {
-                console.error('❌ Signup error:', error);
-                alert('Connection error. Please try again.');
-                signupBtn.disabled = false;
-                signupBtn.textContent = 'Create Account';
-            }
-        });
-    </script>
+    } catch (error) {
+        console.error('Signup error:', error);
+        alert('Connection error. Please try again.');
+        signupBtn.disabled = false;
+        signupBtn.textContent = 'Create Account';
+    }
+});
+</script>
 </body>
 </html>
