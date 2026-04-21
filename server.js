@@ -253,6 +253,38 @@ app.delete('/api/skills/:id', async (req, res) => {
   }
 });
 
+// Get jobs by recruiter
+app.get('/api/recruiter/jobs/:recruiter_id', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM jobs WHERE recruiter_id = $1 ORDER BY created_at DESC',
+      [req.params.recruiter_id]
+    );
+    res.json({ jobs: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get applicants for recruiter's jobs
+app.get('/api/recruiter/applicants/:recruiter_id', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT a.*, s.full_name, s.email, s.branch, s.cgpa, j.title as job_title
+       FROM applications a
+       JOIN students s ON a.roll_number = s.roll_number
+       JOIN jobs j ON a.job_id = j.id
+       WHERE j.recruiter_id = $1
+       ORDER BY a.applied_at DESC`,
+      [req.params.recruiter_id]
+    );
+    res.json({ applicants: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ============ 404 HANDLER ============
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
