@@ -1,104 +1,3 @@
-<!--
-  Front-end student dashboard for Recruitify. This file contains the original HTML/CSS/JS with
-  inline comments and a "Developer Notes" section at top describing DOM IDs, events, expected
-  API endpoints, payload shapes, validation rules, and integration tips for your backend team.
-
-  IMPORTANT: Use the IDs and endpoints below when wiring the backend. The front-end expects JSON
-  responses in the formats shown. Authentication is not implemented on the client — recommend using
-  an Authorization header (Bearer token) and returning 401/403 when unauthorized.
--->
-
-<!-- =========================
-     DEVELOPER NOTES (BACKEND)
-     =========================
-
-API Endpoints (suggested):
-  GET  /api/profile
-    Response: 200 OK
-    Body: {
-      "name": "Ananya Mittal",
-      "tagline": "CS Undergrad @ Kasturba DSEU",
-      "avatarInitials": "A",
-      "cgpa": 9.15,
-      "skillsCount": 4,
-      "projectsCount": 2,
-      "jobMatchesCount": 5,
-      "academic": { "college":"Kasturba DSEU", "branch":"CSE", "year":2, ... }
-    }
-
-  PUT  /api/profile
-    Request body: { name, tagline, cgpa, academic: {...} }
-    Response: 200 OK, updated profile JSON
-
-  GET  /api/skills
-    Response: 200 OK
-    Body: { "hard": [ {skillObject}, ... ], "soft": [ {skillObject}, ... ] }
-
-  POST /api/skills
-    Request body (hard skill):
-      {
-        "type": "hard",
-        "name": "React.js",
-        "description": "Built multiple SPAs",
-        "project": { "title": "E-commerce", "description": "...", "link": "https://..." }
-      }
-    Request body (soft skill):
-      { "type": "soft", "name": "Leadership", "description": "Led a team of 5" }
-    Response: 201 Created, returns created skill
-
-  GET  /api/peers?search=...        -> list of peer profiles
-  GET  /api/jobs?search=...         -> list of job postings
-  GET  /api/shortlisted             -> list of recruiters who shortlisted the user
-  POST /api/interests               -> mark interest in a job
-
-Validation rules (frontend enforced, backend must also validate):
-  - For hard skills: name (non-empty), description (non-empty), project.title (non-empty), project.link must be a valid URL
-  - For soft skills: name, description required
-
-Auth & Headers:
-  - Use Authorization: Bearer <token>
-  - Accept: application/json
-  - Content-Type: application/json for POST/PUT
-
-Sample Responses (minimal):
-  GET /api/skills ->
-    {
-      "hard": [ {"id":1,"name":"React.js","description":"...","project":{"title":"Shop","link":"https://..."}} ],
-      "soft": [ {"id":2,"name":"Communication","description":"..."} ]
-    }
-
-UI mapping (DOM IDs & usage) - Backend should populate these fields on initial page load or when requested:
-  - #welcomeMessage        => "Hello, <firstName>!"
-  - #profileAvatar         => initial or avatar image (string or image URL)
-  - #profilePhoto          => large avatar shown in profile card
-  - #profileName           => profile.name
-  - #profileTagline        => profile.tagline
-  - #skillsCount           => number of skills
-  - #projectsCount         => number of projects (derived)
-  - #jobMatchesCount       => number of matched jobs
-  - #cgpaDisplay           => cgpa value or "--"
-  - #academicDetails       => HTML block listing academic info
-  - #hardSkillsContainer   => render list of hard skill cards
-  - #softSkillsContainer   => render list of soft skill cards
-  - #peersContainer        => list of peer cards
-  - #jobsContainer         => list of job cards
-  - #shortlistedContainer  => list of shortlist entries
-  - #interestsContainer    => list of applied/interested jobs
-  - #skillModal            => modal wrapper (show/hide)
-  - #skillForm             => form element (submit handled client-side)
-  - Form inputs: #skillType, #skillName, #skillDescription, #projectTitle, #projectDescription, #projectLink
-
-Notes & Integration tips:
-  - The frontend currently logs the skill payload and shows an alert. Replace the handler in
-    `skillForm` submit listener with a fetch/axios call to POST /api/skills and then update the DOM
-    (add the new skill to the relevant container and increment #skillsCount).
-  - Keep CORS enabled on the backend and return JSON error messages with {error: "message"}.
-  - Return created timestamps and IDs for resources so the frontend can reference/update/delete later.
-  - Consider returning computed fields such as projectsCount and skillsCount to avoid client computation.
-  - For better UX, make endpoints support pagination for peers/jobs (e.g., ?page=1&size=20).
-
--->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -107,7 +6,6 @@ Notes & Integration tips:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recruitify - Student Dashboard</title>
     <style>
-        /* Styles unchanged from your original file. Kept compact here for readability. */
         * {
             margin: 0;
             padding: 0;
@@ -218,9 +116,7 @@ Notes & Integration tips:
             box-shadow: 0 4px 15px rgba(217, 188, 175, 0.2);
         }
 
-        .profile-avatar:hover {
-            transform: scale(1.05);
-        }
+        .profile-avatar:hover { transform: scale(1.05); }
 
         .nav-container {
             background: var(--white);
@@ -267,9 +163,7 @@ Notes & Integration tips:
             padding: 40px 30px;
         }
 
-        .dashboard-section {
-            display: none;
-        }
+        .dashboard-section { display: none; }
 
         .dashboard-section.active {
             display: block;
@@ -277,15 +171,8 @@ Notes & Integration tips:
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card {
@@ -352,15 +239,8 @@ Notes & Integration tips:
             box-shadow: 0 4px 15px rgba(217, 188, 175, 0.3);
         }
 
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            margin-top: 5px;
-        }
+        .stat-number { font-size: 28px; font-weight: bold; }
+        .stat-label { font-size: 14px; margin-top: 5px; }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--dusky-rose), var(--royal-scepter));
@@ -448,9 +328,7 @@ Notes & Integration tips:
             transition: all 0.3s ease;
         }
 
-        .project-link:hover {
-            background: var(--dusky-rose);
-        }
+        .project-link:hover { background: var(--dusky-rose); }
 
         .empty-state {
             text-align: center;
@@ -473,10 +351,7 @@ Notes & Integration tips:
             font-weight: 600;
         }
 
-        .empty-state p {
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
+        .empty-state p { font-size: 16px; margin-bottom: 20px; }
 
         .browse-tabs {
             display: flex;
@@ -505,13 +380,8 @@ Notes & Integration tips:
             box-shadow: 0 4px 15px rgba(217, 188, 175, 0.3);
         }
 
-        .browse-content {
-            display: none;
-        }
-
-        .browse-content.active {
-            display: block;
-        }
+        .browse-content { display: none; }
+        .browse-content.active { display: block; }
 
         .search-bar {
             background: var(--white);
@@ -550,9 +420,7 @@ Notes & Integration tips:
             justify-content: center;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
 
         .modal-content {
             background: var(--white);
@@ -598,9 +466,7 @@ Notes & Integration tips:
             color: white;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         .form-label {
             display: block;
@@ -609,8 +475,7 @@ Notes & Integration tips:
             color: var(--hawthorne-green);
         }
 
-        .form-input,
-        .form-textarea {
+        .form-input, .form-textarea {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid rgba(217, 188, 175, 0.3);
@@ -620,24 +485,15 @@ Notes & Integration tips:
             font-family: inherit;
         }
 
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+        .form-textarea { resize: vertical; min-height: 100px; }
 
-        .form-input:focus,
-        .form-textarea:focus {
+        .form-input:focus, .form-textarea:focus {
             outline: none;
             border-color: var(--dusky-rose);
         }
 
-        .project-fields {
-            display: none;
-        }
-
-        .project-fields.active {
-            display: block;
-        }
+        .project-fields { display: none; }
+        .project-fields.active { display: block; }
 
         .modal-actions {
             display: flex;
@@ -667,26 +523,12 @@ Notes & Integration tips:
             color: white;
         }
 
-        @media (max-width: 1024px) {
-            .skills-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 1024px) { .skills-grid { grid-template-columns: 1fr; } }
 
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .profile-header {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
+            .header-content { flex-direction: column; gap: 20px; }
+            .profile-header { flex-direction: column; align-items: center; }
+            .cards-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -703,11 +545,9 @@ Notes & Integration tips:
             </div>
             <div class="user-welcome">
                 <div class="welcome-text">
-                    <!-- #welcomeMessage will be filled from /api/profile -->
                     <h2 id="welcomeMessage">Hello, Guest!</h2>
                     <p>Ready to showcase your skills?</p>
                 </div>
-                <!-- #profileAvatar clickable; can open profile settings or upload avatar -->
                 <div class="profile-avatar" id="profileAvatar">?</div>
             </div>
         </div>
@@ -715,7 +555,6 @@ Notes & Integration tips:
 
     <div class="nav-container">
         <nav class="navbar">
-            <!-- Navigation buttons: call showSection('...') to show each section. Backend should set default 'active' based on route if needed. -->
             <button class="nav-item active" onclick="showSection('profile')">My Profile</button>
             <button class="nav-item" onclick="showSection('skills')">My Skills</button>
             <button class="nav-item" onclick="showSection('browse')">Browse</button>
@@ -729,15 +568,12 @@ Notes & Integration tips:
         <section class="dashboard-section active" id="profile-section">
             <div class="card">
                 <div class="profile-header">
-                    <!-- #profilePhoto: large avatar / initials -->
                     <div class="profile-photo" id="profilePhoto">?</div>
                     <div class="profile-info">
-                        <!-- #profileName, #profileTagline updated from profile API -->
                         <h2 id="profileName">Complete your profile</h2>
                         <p class="profile-tagline" id="profileTagline">Add a tagline to describe yourself</p>
                         <div class="profile-stats">
                             <div class="stat-item">
-                                <!-- #skillsCount should be a number -->
                                 <div class="stat-number" id="skillsCount">0</div>
                                 <div class="stat-label">Skills Added</div>
                             </div>
@@ -754,15 +590,13 @@ Notes & Integration tips:
                                 <div class="stat-label">CGPA</div>
                             </div>
                         </div>
-                        <button class="btn-primary" onclick="editProfile()" style="margin-top: 20px;">Edit
-                            Profile</button>
+                        <button class="btn-primary" onclick="editProfile()" style="margin-top: 20px;">Edit Profile</button>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h3 class="section-title"> Academic Information</h3>
-                <!-- #academicDetails: backend should render a block of academic data here (college, branch, year, transcripts link etc.) -->
+                <h3 class="section-title">📋 Academic Information</h3>
                 <div id="academicDetails">
                     <div class="empty-state">
                         <div class="empty-state-icon">📋</div>
@@ -776,14 +610,13 @@ Notes & Integration tips:
         <!-- Skills Section -->
         <section class="dashboard-section" id="skills-section">
             <div class="skills-header">
-                <h2 class="section-title"> My Skills Portfolio</h2>
+                <h2 class="section-title">💼 My Skills Portfolio</h2>
                 <button class="btn-primary" onclick="openSkillModal()">+ Add Skill</button>
             </div>
 
             <div class="skills-grid">
                 <div class="skill-category">
-                    <h3 class="category-title"> Hard Skills</h3>
-                    <!-- #hardSkillsContainer: backend or frontend renderer will append skill-item blocks here -->
+                    <h3 class="category-title">💻 Hard Skills</h3>
                     <div id="hardSkillsContainer">
                         <div class="empty-state">
                             <div class="empty-state-icon">💻</div>
@@ -795,8 +628,7 @@ Notes & Integration tips:
                 </div>
 
                 <div class="skill-category">
-                    <h3 class="category-title"> Soft Skills</h3>
-                    <!-- #softSkillsContainer similar to hard -->
+                    <h3 class="category-title">🌟 Soft Skills</h3>
                     <div id="softSkillsContainer">
                         <div class="empty-state">
                             <div class="empty-state-icon">🌟</div>
@@ -818,7 +650,6 @@ Notes & Integration tips:
 
             <div class="browse-content active" id="peers-content">
                 <input type="text" class="search-bar" placeholder="Search peers by name, branch, or skills...">
-                <!-- #peersContainer: populate with peer cards -> recommended API GET /api/peers -->
                 <div class="cards-grid" id="peersContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">👥</div>
@@ -830,7 +661,6 @@ Notes & Integration tips:
 
             <div class="browse-content" id="jobs-content">
                 <input type="text" class="search-bar" placeholder="Search jobs by title, company...">
-                <!-- #jobsContainer: populate with job cards -> recommended API GET /api/jobs -->
                 <div class="cards-grid" id="jobsContainer">
                     <div class="empty-state">
                         <div class="empty-state-icon">💼</div>
@@ -844,7 +674,6 @@ Notes & Integration tips:
         <!-- Shortlisted Section -->
         <section class="dashboard-section" id="shortlisted-section">
             <h2 class="section-title">⭐ Shortlisted by Recruiters</h2>
-            <!-- #shortlistedContainer -> GET /api/shortlisted -->
             <div id="shortlistedContainer">
                 <div class="empty-state">
                     <div class="empty-state-icon">🎯</div>
@@ -856,13 +685,12 @@ Notes & Integration tips:
 
         <!-- Job Interests Section -->
         <section class="dashboard-section" id="interests-section">
-            <h2 class="section-title"> My Job Interests</h2>
-            <!-- #interestsContainer -> GET /api/interests (or /api/applications) -->
+            <h2 class="section-title">📝 My Job Interests</h2>
             <div id="interestsContainer">
                 <div class="empty-state">
                     <div class="empty-state-icon">📝</div>
                     <h3>No Applications Yet</h3>
-                    <p>Browse jobs and click "Interested" to apply</p>
+                    <p>Browse jobs and click "Apply Now" to apply</p>
                     <button class="btn-primary" onclick="showSection('browse')">Browse Jobs</button>
                 </div>
             </div>
@@ -875,42 +703,32 @@ Notes & Integration tips:
             <h2 class="modal-title">Add New Skill</h2>
 
             <div class="skill-type-tabs">
-                <!-- Buttons toggle skill type for the modal. Default is 'hard' -->
                 <button class="skill-type-btn active" onclick="selectSkillType('hard')">💼 Hard Skill</button>
                 <button class="skill-type-btn" onclick="selectSkillType('soft')">🤝 Soft Skill</button>
             </div>
 
             <form id="skillForm">
-                <!-- #skillType holds 'hard' or 'soft' -->
                 <input type="hidden" id="skillType" value="hard">
 
                 <div class="form-group">
                     <label class="form-label">Skill Name *</label>
-                    <!-- #skillName required -->
-                    <input type="text" class="form-input" id="skillName" placeholder="e.g., React.js, Leadership"
-                        required>
+                    <input type="text" class="form-input" id="skillName" placeholder="e.g., React.js, Leadership" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Description *</label>
-                    <!-- #skillDescription required -->
-                    <textarea class="form-textarea" id="skillDescription" placeholder="Describe your proficiency..."
-                        required></textarea>
+                    <textarea class="form-textarea" id="skillDescription" placeholder="Describe your proficiency..." required></textarea>
                 </div>
 
                 <div class="project-fields active" id="projectFields">
-                    <!-- Project fields are shown only for hard skills. The JS toggles required= true/false accordingly. -->
                     <div class="form-group">
                         <label class="form-label">Project Title *</label>
                         <input type="text" class="form-input" id="projectTitle" placeholder="e.g., E-commerce Website">
                     </div>
-
                     <div class="form-group">
                         <label class="form-label">Project Description</label>
-                        <textarea class="form-textarea" id="projectDescription"
-                            placeholder="Brief description..."></textarea>
+                        <textarea class="form-textarea" id="projectDescription" placeholder="Brief description..."></textarea>
                     </div>
-
                     <div class="form-group">
                         <label class="form-label">Project Link *</label>
                         <input type="url" class="form-input" id="projectLink" placeholder="https://github.com/...">
@@ -926,16 +744,9 @@ Notes & Integration tips:
     </div>
 
     <script>
-      const API = "https://recruitify-backened.onrender.com";
-        /*
-          JavaScript behavior notes and inline comments below. When integrating with backend, replace
-          the console.log / alert calls with fetch/axios calls to the endpoints described in Developer Notes.
-        */
+        const API = "https://recruitify-backened.onrender.com";
 
-        // Navigation: showSection switches the visible dashboard section by id.
-        // NOTE: original code references `event` implicitly; that works only when onclick handler is directly
-        // invoked from an HTML attribute (as it currently is). For robustness, it's better to accept the event
-        // as an argument or query the clicked element. We'll keep current behavior but recommend a small fix.
+        // ============ NAVIGATION ============
         function showSection(sectionName) {
             document.querySelectorAll('.dashboard-section').forEach(section => {
                 section.classList.remove('active');
@@ -945,17 +756,8 @@ Notes & Integration tips:
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            // WARNING: using global `event` is fragile in some environments. Recommended fix below.
-            try {
-                event.target.classList.add('active');
-            } catch (err) {
-                // fallback: find nav-item by data-section attribute or keep first as active
-                // No-op fallback; backend can set active nav if server-side rendering is used.
-            }
+            try { event.target.classList.add('active'); } catch (err) {}
         }
-
-        // Recommended alternative (if you change the HTML to pass `event`):
-        // function showSection(sectionName, e) { ... e.target.classList.add('active'); }
 
         function showBrowseContent(contentType) {
             document.querySelectorAll('.browse-content').forEach(content => {
@@ -966,14 +768,12 @@ Notes & Integration tips:
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            try {
-                event.target.classList.add('active');
-            } catch (err) {
-                // silent fallback
-            }
+            try { event.target.classList.add('active'); } catch (err) {}
+
+            if (contentType === 'jobs') loadJobs(); // ✅ Load jobs when tab clicked
         }
 
-        // Skills Modal control: open/close/select type
+        // ============ SKILL MODAL ============
         function openSkillModal(type = 'hard') {
             document.getElementById('skillModal').classList.add('active');
             document.getElementById('skillForm').reset();
@@ -986,280 +786,314 @@ Notes & Integration tips:
 
         function selectSkillType(type) {
             document.getElementById('skillType').value = type;
-
-            document.querySelectorAll('.skill-type-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // using event.target here is fine for current inline onclick usage; see earlier note for robustness
-            try { event.target.classList.add('active'); } catch (err) { }
+            document.querySelectorAll('.skill-type-btn').forEach(btn => btn.classList.remove('active'));
+            try { event.target.classList.add('active'); } catch (err) {}
 
             const projectFields = document.getElementById('projectFields');
             const projectInputs = projectFields.querySelectorAll('input, textarea');
 
             if (type === 'hard') {
-                // Show project fields and make them required for hard skills
                 projectFields.classList.add('active');
                 projectInputs.forEach(input => input.required = true);
             } else {
-                // Hide project fields for soft skills
                 projectFields.classList.remove('active');
                 projectInputs.forEach(input => input.required = false);
             }
         }
 
-        // Form submission: currently logs payload and shows alert. Replace console.log with a fetch to your backend.
-       
-          document.getElementById('skillForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const studentData = JSON.parse(localStorage.getItem('studentData'));
-    const rollNumber = studentData.roll_number;
-    const type = document.getElementById('skillType').value;
-
-    const skillData = {
-        type,
-        name: document.getElementById('skillName').value.trim(),
-        description: document.getElementById('skillDescription').value.trim(),
-        project_title: document.getElementById('projectTitle').value.trim(),
-        project_description: document.getElementById('projectDescription').value.trim(),
-        project_link: document.getElementById('projectLink').value.trim()
-    };
-
-    if (!skillData.name || !skillData.description) {
-        alert('Please provide skill name and description.');
-        return;
-    }
-
-    if (type === 'hard' && !skillData.project_link) {
-        alert('Please provide a project link for hard skills.');
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://recruitify-backened.onrender.com/api/skills/${rollNumber}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(skillData)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alert('✅ Skill added successfully!');
-            closeSkillModal();
-            loadSkills(); // refresh skills display
-        } else {
-            alert(data.error || 'Failed to add skill');
-        }
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
-});
-
         function editProfile() {
-            // This placeholder can be changed to open a profile edit modal or navigate to a profile edit page
-            alert('Profile editing will be implemented by your backend team!');
+            window.location.href = 'studentprofile.html';
         }
 
-        // Close modal when clicking outside
         document.getElementById('skillModal').addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeSkillModal();
+            if (e.target === this) closeSkillModal();
+        });
+
+        // ============ SKILL FORM SUBMIT ============
+        document.getElementById('skillForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+            const rollNumber = studentData.roll_number;
+            const type = document.getElementById('skillType').value;
+
+            const skillData = {
+                type,
+                name: document.getElementById('skillName').value.trim(),
+                description: document.getElementById('skillDescription').value.trim(),
+                project_title: document.getElementById('projectTitle').value.trim(),
+                project_description: document.getElementById('projectDescription').value.trim(),
+                project_link: document.getElementById('projectLink').value.trim()
+            };
+
+            if (!skillData.name || !skillData.description) {
+                alert('Please provide skill name and description.');
+                return;
+            }
+
+            if (type === 'hard' && !skillData.project_link) {
+                alert('Please provide a project link for hard skills.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API}/api/skills/${rollNumber}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(skillData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('✅ Skill added successfully!');
+                    closeSkillModal();
+                    loadSkills();
+                } else {
+                    alert(data.error || 'Failed to add skill');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
             }
         });
 
-        // Utility: render functions the backend can call after fetching data
-        // Example: call populateProfile(profileJson) after GET /api/profile returns
-        function populateProfile(profile) {
-            // profile: { name, tagline, avatarInitials, cgpa, skillsCount, projectsCount, jobMatchesCount }
-            if (!profile) return;
-            const firstName = (profile.name || 'Guest').split(' ')[0];
-            document.getElementById('welcomeMessage').textContent = `Hello, ${firstName}!`;
-            document.getElementById('profileAvatar').textContent = profile.avatarInitials || '?';
-            document.getElementById('profilePhoto').textContent = profile.avatarInitials || '?';
-            document.getElementById('profileName').textContent = profile.name || 'Complete your profile';
-            document.getElementById('profileTagline').textContent = profile.tagline || 'Add a tagline to describe yourself';
-            document.getElementById('skillsCount').textContent = profile.skillsCount != null ? profile.skillsCount : 0;
-            document.getElementById('projectsCount').textContent = profile.projectsCount != null ? profile.projectsCount : 0;
-            document.getElementById('jobMatchesCount').textContent = profile.jobMatchesCount != null ? profile.jobMatchesCount : 0;
-            document.getElementById('cgpaDisplay').textContent = profile.cgpa != null ? profile.cgpa : '--';
+        // ============ LOAD SKILLS ============
+        async function loadSkills() {
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+            if (!studentData) return;
 
-            // Academic details: build HTML block (backend may instead return pre-rendered HTML)
-            if (profile.academic) {
-                const a = profile.academic;
-                const html = `\n                    <div class="profile-education">\n                      <strong>${a.college || ''}</strong> — ${a.branch || ''} (Year ${a.year || ''})<br/>\n                      <small>${a.details || ''}</small>\n                    </div>`;
-                document.getElementById('academicDetails').innerHTML = html;
+            try {
+                const response = await fetch(`${API}/api/skills/${studentData.roll_number}`);
+                const data = await response.json();
+
+                document.getElementById('skillsCount').textContent = data.total || 0;
+                document.getElementById('projectsCount').textContent = data.hard ? data.hard.length : 0;
+
+                const hardContainer = document.getElementById('hardSkillsContainer');
+                if (data.hard && data.hard.length > 0) {
+                    hardContainer.innerHTML = data.hard.map(skill => `
+                        <div class="skill-item">
+                            <div class="skill-name">${skill.name}</div>
+                            <div class="skill-description">${skill.description}</div>
+                            ${skill.project_title ? `<div style="margin-top:8px;font-size:13px;color:var(--hawthorne-green);"><strong>Project:</strong> ${skill.project_title}</div>` : ''}
+                            ${skill.project_link ? `<a class="project-link" href="${skill.project_link}" target="_blank">View Project</a>` : ''}
+                            <button onclick="deleteSkill(${skill.id})" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:12px;">Delete</button>
+                        </div>
+                    `).join('');
+                } else {
+                    hardContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💻</div>
+                            <h3>Add Your First Hard Skill</h3>
+                            <p>Showcase your technical abilities with project links</p>
+                            <button class="btn-primary" onclick="openSkillModal('hard')">Add Hard Skill</button>
+                        </div>`;
+                }
+
+                const softContainer = document.getElementById('softSkillsContainer');
+                if (data.soft && data.soft.length > 0) {
+                    softContainer.innerHTML = data.soft.map(skill => `
+                        <div class="skill-item">
+                            <div class="skill-name">${skill.name}</div>
+                            <div class="skill-description">${skill.description}</div>
+                            <button onclick="deleteSkill(${skill.id})" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:12px;">Delete</button>
+                        </div>
+                    `).join('');
+                } else {
+                    softContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🌟</div>
+                            <h3>Add Your First Soft Skill</h3>
+                            <p>Highlight your interpersonal and leadership abilities</p>
+                            <button class="btn-primary" onclick="openSkillModal('soft')">Add Soft Skill</button>
+                        </div>`;
+                }
+            } catch (err) {
+                console.error('Error loading skills:', err);
             }
         }
 
-        // Example renderer for skills after GET /api/skills -> { hard: [...], soft: [...] }
-        function renderSkills(skillsJson) {
-            const hardContainer = document.getElementById('hardSkillsContainer');
-            const softContainer = document.getElementById('softSkillsContainer');
+        async function deleteSkill(skillId) {
+            if (!confirm('Are you sure you want to delete this skill?')) return;
+            try {
+                const response = await fetch(`${API}/api/skills/${skillId}`, { method: 'DELETE' });
+                if (response.ok) loadSkills();
+            } catch (err) {
+                alert('Error deleting skill: ' + err.message);
+            }
+        }
 
-            // Clear existing content
-            hardContainer.innerHTML = '';
-            softContainer.innerHTML = '';
+        // ============ LOAD JOBS ============
+        async function loadJobs() {
+            try {
+                const response = await fetch(`${API}/api/jobs`);
+                const data = await response.json();
+                const jobsContainer = document.getElementById('jobsContainer');
 
-            if (Array.isArray(skillsJson.hard) && skillsJson.hard.length) {
-                skillsJson.hard.forEach(s => {
-                    const block = document.createElement('div');
-                    block.className = 'skill-item';
-                    block.innerHTML = `<div class="skill-name">${s.name}</div><div class="skill-description">${s.description}</div>` + (s.project && s.project.link ? `<a class="project-link" href="${s.project.link}" target="_blank">View Project</a>` : '');
-                    hardContainer.appendChild(block);
+                if (data.jobs && data.jobs.length > 0) {
+                    jobsContainer.innerHTML = data.jobs.map(job => `
+                        <div class="card" style="margin-bottom:0">
+                            <h3 style="color:var(--hawthorne-green);margin-bottom:8px">${job.title}</h3>
+                            <p style="color:var(--royal-scepter);font-weight:600;margin-bottom:8px">${job.company}</p>
+                            <p style="font-size:14px;margin-bottom:5px">📍 ${job.location || 'N/A'}</p>
+                            <p style="font-size:14px;margin-bottom:5px">💰 ${job.salary || 'N/A'}</p>
+                            <p style="font-size:14px;margin-bottom:5px">⏰ Deadline: ${job.deadline ? new Date(job.deadline).toDateString() : 'N/A'}</p>
+                            <p style="font-size:14px;color:var(--thistle);margin:10px 0">${job.description || ''}</p>
+                            <p style="font-size:13px;margin-bottom:15px"><strong>Requirements:</strong> ${job.requirements || 'N/A'}</p>
+                            <button
+                                onclick="applyJob(${job.id}, this)"
+                                style="background:linear-gradient(135deg,var(--dusky-rose),var(--royal-scepter));color:white;border:none;padding:10px 25px;border-radius:20px;cursor:pointer;font-weight:600;">
+                                Apply Now
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    jobsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💼</div>
+                            <h3>No Job Openings Yet</h3>
+                            <p>Recruiters haven't posted any jobs yet. Check back soon!</p>
+                        </div>`;
+                }
+            } catch (err) {
+                console.error('Error loading jobs:', err);
+            }
+        }
+
+        // ============ APPLY FOR JOB ============
+        async function applyJob(jobId, btn) {
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+            if (!studentData) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Applying...';
+
+            try {
+                const response = await fetch(`${API}/api/apply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        roll_number: studentData.roll_number,
+                        job_id: jobId
+                    })
                 });
-            } else {
-                hardContainer.innerHTML = '<div class="empty-state">\n                            <div class="empty-state-icon">💻</div>\n                            <h3>Add Your First Hard Skill</h3>\n                            <p>Showcase your technical abilities with project links</p>\n                            <button class="btn-primary" onclick="openSkillModal(\'hard\')">Add Hard Skill</button>\n                        </div>';
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    btn.textContent = '✅ Applied!';
+                    btn.style.background = 'var(--thistle)';
+                    loadMyApplications();
+                } else {
+                    if (data.error === 'Already applied for this job') {
+                        btn.textContent = '✅ Already Applied';
+                        btn.style.background = 'var(--thistle)';
+                    } else {
+                        btn.textContent = 'Apply Now';
+                        btn.disabled = false;
+                        alert(data.error || 'Failed to apply');
+                    }
+                }
+            } catch (err) {
+                btn.textContent = 'Apply Now';
+                btn.disabled = false;
+                alert('Error: ' + err.message);
             }
-
-            if (Array.isArray(skillsJson.soft) && skillsJson.soft.length) {
-                skillsJson.soft.forEach(s => {
-                    const block = document.createElement('div');
-                    block.className = 'skill-item';
-                    block.innerHTML = `<div class="skill-name">${s.name}</div><div class="skill-description">${s.description}</div>`;
-                    softContainer.appendChild(block);
-                });
-            } else {
-                softContainer.innerHTML = '<div class="empty-state">\n                            <div class="empty-state-icon">🌟</div>\n                            <h3>Add Your First Soft Skill</h3>\n                            <p>Highlight your interpersonal and leadership abilities</p>\n                            <button class="btn-primary" onclick="openSkillModal(\'soft\')">Add Soft Skill</button>\n                        </div>';
-            }
-        } 
-      // Load student data when page opens
-// Load student data when page opens
-window.addEventListener('DOMContentLoaded', async function() {
-    const studentData = JSON.parse(localStorage.getItem('studentData'));
-
-    if (!studentData || !studentData.roll_number) {
-        alert('Please login first');
-        window.location.href = 'studentlogin.html';
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API}/api/student/profile/${studentData.roll_number}`);
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-
-        if (data && data.student) {
-            const student = data.student;
-            const firstName = student.full_name ? student.full_name.split(' ')[0] : 'Guest';
-            const firstLetter = student.full_name ? student.full_name.charAt(0).toUpperCase() : '?';
-
-            document.getElementById('welcomeMessage').textContent = `Hello, ${firstName}!`;
-            document.getElementById('profileAvatar').textContent = firstLetter;
-            document.getElementById('profilePhoto').textContent = firstLetter;
-            document.getElementById('profileName').textContent = student.full_name || 'Guest';
-            document.getElementById('profileTagline').textContent = student.tagline || 'Add a tagline to describe yourself';
-            document.getElementById('cgpaDisplay').textContent = student.cgpa || '--';
-            document.getElementById('skillsCount').textContent = 0;
-            document.getElementById('projectsCount').textContent = 0;
-            document.getElementById('jobMatchesCount').textContent = 0;
-
-            if (student.college) {
-                document.getElementById('academicDetails').innerHTML = `
-                    <div style="line-height: 2;">
-                        <p><strong>College:</strong> ${student.college}</p>
-                        <p><strong>Branch:</strong> ${student.branch || 'N/A'}</p>
-                        <p><strong>Year:</strong> ${student.year_of_study || 'N/A'}</p>
-                        <p><strong>CGPA:</strong> ${student.cgpa || 'N/A'}</p>
-                        <p><strong>Email:</strong> ${student.email}</p>
-                        <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
-                        <p><strong>Address:</strong> ${student.address || 'N/A'}</p>
-                        ${student.linkedin ? `<p><strong>LinkedIn:</strong> <a href="${student.linkedin}" target="_blank" style="color:var(--dusky-rose)">View Profile</a></p>` : ''}
-                        ${student.github ? `<p><strong>GitHub:</strong> <a href="${student.github}" target="_blank" style="color:var(--dusky-rose)">View Profile</a></p>` : ''}
-                    </div>
-                `;
-            }
-
-            // Save fresh data to localStorage
-            localStorage.setItem('studentData', JSON.stringify(student));
-        }
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
-    }
-  loadSkills(); // load skills when page opens
-});
-      async function loadSkills() {
-    const studentData = JSON.parse(localStorage.getItem('studentData'));
-    if (!studentData) return;
-
-    try {
-        const response = await fetch(`https://recruitify-backened.onrender.com/api/skills/${studentData.roll_number}`);
-        const data = await response.json();
-
-        // Update counts
-        document.getElementById('skillsCount').textContent = data.total || 0;
-        document.getElementById('projectsCount').textContent = data.hard ? data.hard.length : 0;
-
-        // Render hard skills
-        const hardContainer = document.getElementById('hardSkillsContainer');
-        if (data.hard && data.hard.length > 0) {
-            hardContainer.innerHTML = data.hard.map(skill => `
-                <div class="skill-item">
-                    <div class="skill-name">${skill.name}</div>
-                    <div class="skill-description">${skill.description}</div>
-                    ${skill.project_title ? `<div style="margin-top:8px; font-size:13px; color:var(--hawthorne-green);"><strong>Project:</strong> ${skill.project_title}</div>` : ''}
-                    ${skill.project_link ? `<a class="project-link" href="${skill.project_link}" target="_blank">View Project</a>` : ''}
-                    <button onclick="deleteSkill(${skill.id})" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:12px;">Delete</button>
-                </div>
-            `).join('');
-        } else {
-            hardContainer.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">💻</div>
-                    <h3>Add Your First Hard Skill</h3>
-                    <p>Showcase your technical abilities with project links</p>
-                    <button class="btn-primary" onclick="openSkillModal('hard')">Add Hard Skill</button>
-                </div>`;
         }
 
-        // Render soft skills
-        const softContainer = document.getElementById('softSkillsContainer');
-        if (data.soft && data.soft.length > 0) {
-            softContainer.innerHTML = data.soft.map(skill => `
-                <div class="skill-item">
-                    <div class="skill-name">${skill.name}</div>
-                    <div class="skill-description">${skill.description}</div>
-                    <button onclick="deleteSkill(${skill.id})" style="background:#e74c3c;color:white;border:none;padding:5px 12px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:12px;">Delete</button>
-                </div>
-            `).join('');
-        } else {
-            softContainer.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">🌟</div>
-                    <h3>Add Your First Soft Skill</h3>
-                    <p>Highlight your interpersonal and leadership abilities</p>
-                    <button class="btn-primary" onclick="openSkillModal('soft')">Add Soft Skill</button>
-                </div>`;
-        }
-    } catch (err) {
-        console.error('Error loading skills:', err);
-    }
-}
+        // ============ LOAD MY APPLICATIONS ============
+        async function loadMyApplications() {
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+            if (!studentData) return;
 
-async function deleteSkill(skillId) {
-    if (!confirm('Are you sure you want to delete this skill?')) return;
-    try {
-        const response = await fetch(`https://recruitify-backened.onrender.com/api/skills/${skillId}`, {
-            method: 'DELETE'
-        });
-        if (response.ok) {
+            try {
+                const response = await fetch(`${API}/api/apply/${studentData.roll_number}`);
+                const data = await response.json();
+                const container = document.getElementById('interestsContainer');
+
+                if (data.applications && data.applications.length > 0) {
+                    const statusColor = { pending: 'orange', accepted: 'green', rejected: 'red' };
+                    container.innerHTML = data.applications.map(app => `
+                        <div class="card" style="margin-bottom:15px">
+                            <h3 style="color:var(--hawthorne-green);margin-bottom:5px">${app.title}</h3>
+                            <p style="color:var(--royal-scepter);font-weight:600;margin-bottom:8px">${app.company}</p>
+                            <p style="font-size:14px">📍 ${app.location || 'N/A'} | 💰 ${app.salary || 'N/A'}</p>
+                            <p style="margin-top:10px">
+                                Status: <strong style="color:${statusColor[app.status] || 'gray'}">${app.status.toUpperCase()}</strong>
+                            </p>
+                            <p style="font-size:13px;color:var(--thistle);margin-top:5px">Applied: ${new Date(app.applied_at).toDateString()}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3>No Applications Yet</h3>
+                            <p>Browse jobs and click "Apply Now" to apply</p>
+                            <button class="btn-primary" onclick="showSection('browse')">Browse Jobs</button>
+                        </div>`;
+                }
+            } catch (err) {
+                console.error('Error loading applications:', err);
+            }
+        }
+
+        // ============ PAGE LOAD ============
+        window.addEventListener('DOMContentLoaded', async function () {
+            const studentData = JSON.parse(localStorage.getItem('studentData'));
+
+            if (!studentData || !studentData.roll_number) {
+                alert('Please login first');
+                window.location.href = 'studentlogin.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API}/api/student/profile/${studentData.roll_number}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+
+                if (data && data.student) {
+                    const student = data.student;
+                    const firstName = student.full_name ? student.full_name.split(' ')[0] : 'Guest';
+                    const firstLetter = student.full_name ? student.full_name.charAt(0).toUpperCase() : '?';
+
+                    document.getElementById('welcomeMessage').textContent = `Hello, ${firstName}!`;
+                    document.getElementById('profileAvatar').textContent = firstLetter;
+                    document.getElementById('profilePhoto').textContent = firstLetter;
+                    document.getElementById('profileName').textContent = student.full_name || 'Guest';
+                    document.getElementById('profileTagline').textContent = student.tagline || 'Add a tagline to describe yourself';
+                    document.getElementById('cgpaDisplay').textContent = student.cgpa || '--';
+
+                    if (student.college) {
+                        document.getElementById('academicDetails').innerHTML = `
+                            <div style="line-height: 2;">
+                                <p><strong>College:</strong> ${student.college}</p>
+                                <p><strong>Branch:</strong> ${student.branch || 'N/A'}</p>
+                                <p><strong>Year:</strong> ${student.year_of_study || 'N/A'}</p>
+                                <p><strong>CGPA:</strong> ${student.cgpa || 'N/A'}</p>
+                                <p><strong>Email:</strong> ${student.email}</p>
+                                <p><strong>Phone:</strong> ${student.phone || 'N/A'}</p>
+                                <p><strong>Address:</strong> ${student.address || 'N/A'}</p>
+                                ${student.linkedin ? `<p><strong>LinkedIn:</strong> <a href="${student.linkedin}" target="_blank" style="color:var(--dusky-rose)">View Profile</a></p>` : ''}
+                                ${student.github ? `<p><strong>GitHub:</strong> <a href="${student.github}" target="_blank" style="color:var(--dusky-rose)">View Profile</a></p>` : ''}
+                            </div>
+                        `;
+                    }
+
+                    localStorage.setItem('studentData', JSON.stringify(student));
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+
+            // ✅ Load all data on page open
             loadSkills();
-        }
-    } catch (err) {
-        alert('Error deleting skill: ' + err.message);
-    }
-}
-
-      
-</script>
-
+            loadJobs();
+            loadMyApplications();
+        });
+    </script>
 </body>
 
-
 </html>
-
-
-
-
