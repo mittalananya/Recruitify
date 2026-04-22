@@ -88,6 +88,18 @@ app.get('/api/setup', async (req, res) => {
         UNIQUE(roll_number, job_id)
       )
     `);
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS shortlists (
+    id SERIAL PRIMARY KEY,
+    recruiter_id INT REFERENCES recruiters(id) ON DELETE CASCADE,
+    roll_number VARCHAR(20) REFERENCES students(roll_number) ON DELETE CASCADE,
+    job_id INT REFERENCES jobs(id) ON DELETE CASCADE,
+    type VARCHAR(10) DEFAULT 'public',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(recruiter_id, roll_number, job_id)
+  )
+`);
+    
     res.json({ message: '✅ All tables created successfully!' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -348,6 +360,71 @@ app.get('/api/apply/:roll_number', async (req, res) => {
       [req.params.roll_number]
     );
     res.json({ applications: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ SHORTLIST ROUTES ============
+
+// Shortlist a student
+app.post('/api/shortlist', async (req, res) => {
+  const { recruiter_id, roll_number, job_id, type } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO shortlists (recruiter_id, roll_number, job_id, type)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (recruiter_id, roll_number, job_id) DO UPDATE SET type = $4
+       RETURNING *`,
+      [recruiter_id, roll_number, job_id, type || 'public']
+    );
+    res.status(201).json({ message: 'Student shortlisted!', shortlist: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get shortlists by recruiter
+app.get('/api/shortlist/recruiter/:recruiter_id', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT sh.*, s.full_name, s.email, s.branch, s.cgpa, j.title as job_title
+       FROM shortlists sh
+       JOIN students s ON sh.roll_number = s.roll_number
+       JOIN jobs j ON sh.job_id = j.id
+       WHERE sh.recruiter_id = $1
+       ORDER BY sh.created_at DESC`,
+      [req.params.recruiter_id]
+    );
+    res.json({ shortlists: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get shortlists for a student
+app.get('/api/shortlist/student/:roll_number', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT sh.*, r.company_name, j.title as job_title
+       FROM shortlists sh
+       JOIN recruiters r ON sh.recruiter_id = r.id
+       JOIN jobs j ON sh.job_id = j.id
+       WHERE sh.roll_number = $1 AND sh.type = 'public'
+       ORDER BY sh.created_at DESC`,
+      [req.params.roll_number]
+    );
+    res.json({ shortlists: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Remove from shortlist
+app.delete('/api/shortlist/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM shortlists WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Removed from shortlist' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
