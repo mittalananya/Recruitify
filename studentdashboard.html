@@ -742,6 +742,37 @@
             </form>
         </div>
     </div>
+    async function loadShortlisted() {
+    const studentData = JSON.parse(localStorage.getItem('studentData'));
+    if (!studentData) return;
+
+    try {
+        const response = await fetch(`${API}/api/shortlist/student/${studentData.roll_number}`);
+        const data = await response.json();
+        const container = document.getElementById('shortlistedContainer');
+
+        if (data.shortlists && data.shortlists.length > 0) {
+            container.innerHTML = data.shortlists.map(s => `
+                <div class="card" style="margin-bottom:15px">
+                    <h3 style="color:var(--hawthorne-green);margin-bottom:5px">⭐ ${s.company_name}</h3>
+                    <p style="color:var(--royal-scepter);font-weight:600">Job: ${s.job_title}</p>
+                    <p style="font-size:13px;color:var(--thistle);margin-top:5px">
+                        Shortlisted on: ${new Date(s.created_at).toDateString()}
+                    </p>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎯</div>
+                    <h3>No Shortlists Yet</h3>
+                    <p>Keep building your profile and adding skills. Recruiters will find you!</p>
+                </div>`;
+        }
+    } catch (err) {
+        console.error('Error loading shortlists:', err);
+    }
+}
 
     <script>
         const API = "https://recruitify-backened.onrender.com";
@@ -1089,9 +1120,10 @@
             }
 
             // ✅ Load all data on page open
-            loadSkills();
-            loadJobs();
-            loadMyApplications();
+           loadSkills();
+           loadJobs();
+           loadMyApplications();
+           loadShortlisted(); // ← ADD THIS
         });
     </script>
 </body>
